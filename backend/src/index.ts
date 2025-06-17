@@ -16,7 +16,8 @@ app.get('/', (c) => {
 })
 
 // APIエンドポイントを追加
-app.get('/api/message', (c) => {
+app.get('/api/message', async(c) => {
+  // await new Promise(resolve => setTimeout(resolve, 10000))
   return c.json({
     message: 'こんにちは！これはバックエンドAPIから取得したメッセージです。',
     timestamp: new Date().toISOString(),
