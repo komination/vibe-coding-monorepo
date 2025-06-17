@@ -1,0 +1,14 @@
+FROM node:24.2.0-bookworm
+
+# ARG USER
+# ARG UID
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    sudo \
+    curl \
+    gnupg \
+    jq
+RUN npm install -g @anthropic-ai/claude-code
+
+USER node
