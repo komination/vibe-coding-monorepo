@@ -14,4 +14,21 @@ services:
       - ./.env
     volumes:
       - ./:/app
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: kanban
+      POSTGRES_PASSWORD: kanban_password
+      POSTGRES_DB: kanban_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
   
