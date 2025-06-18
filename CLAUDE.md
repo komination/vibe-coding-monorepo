@@ -19,12 +19,22 @@ The project follows a monorepo structure with clear separation:
   - `/api/message` - JSON API endpoint for frontend consumption
   - CORS configuration for cross-origin requests
   - Uses ESM modules and tsx for development
+  - Own package.json with backend-specific dependencies
 - `frontend/` - Next.js application (port 4001)
   - `app/` - App Router structure with SSR implementation
   - `lib/api.ts` - API client for backend communication
   - Server-side rendering of API data
   - Uses Geist fonts and CSS modules for styling
+  - Own package.json with frontend-specific dependencies
 - `compose.yml` - Docker development environment
+
+## Dependency Management
+
+Following Turborepo best practices:
+- **Each package has its own dependencies** in their respective package.json files
+- **Root package.json** only contains repository management tools (turbo)
+- **No shared dependencies at root level** - each package declares what it needs
+- Dependencies are installed via npm workspaces in package subdirectories
 
 ## Development Commands
 
