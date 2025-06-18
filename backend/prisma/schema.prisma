@@ -1,0 +1,289 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ユーザーモデル
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  username       String         @unique
+  passwordHash   String
+  name           String?
+  avatarUrl      String?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  ownedBoards    Board[]        @relation("BoardOwner")
+  boardMembers   BoardMember[]
+  cards          Card[]         @relation("CardAssignee")
+  createdCards   Card[]         @relation("CardCreator")
+  comments       Comment[]
+  activities     Activity[]
+  attachments    Attachment[]
+
+  @@index([email])
+  @@index([username])
+}
+
+// ボードモデル
+model Board {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  backgroundUrl  String?
+  isPublic       Boolean        @default(false)
+  isArchived     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  ownerId        String
+  owner          User           @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  lists          List[]
+  members        BoardMember[]
+  labels         Label[]
+  activities     Activity[]
+
+  @@index([ownerId])
+  @@index([isArchived])
+}
+
+// ボードメンバー（多対多の中間テーブル）
+model BoardMember {
+  id             String         @id @default(cuid())
+  role           BoardRole      @default(MEMBER)
+  joinedAt       DateTime       @default(now())
+
+  // Relations
+  boardId        String
+  board          Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, userId])
+  @@index([boardId])
+  @@index([userId])
+}
+
+// ボードロール
+enum BoardRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+// リストモデル（カンバンのカラム）
+model List {
+  id             String         @id @default(cuid())
+  title          String
+  position       Int
+  color          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  boardId        String
+  board          Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards          Card[]
+
+  @@unique([boardId, position])
+  @@index([boardId])
+}
+
+// カードモデル（タスク）
+model Card {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  position       Int
+  dueDate        DateTime?
+  startDate      DateTime?
+  isArchived     Boolean        @default(false)
+  coverUrl       String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  listId         String
+  list           List           @relation(fields: [listId], references: [id], onDelete: Cascade)
+  creatorId      String
+  creator        User           @relation("CardCreator", fields: [creatorId], references: [id])
+  assigneeId     String?
+  assignee       User?          @relation("CardAssignee", fields: [assigneeId], references: [id])
+  labels         CardLabel[]
+  comments       Comment[]
+  attachments    Attachment[]
+  activities     Activity[]
+  checklists     Checklist[]
+
+  @@unique([listId, position])
+  @@index([listId])
+  @@index([creatorId])
+  @@index([assigneeId])
+  @@index([dueDate])
+}
+
+// ラベルモデル
+model Label {
+  id             String         @id @default(cuid())
+  name           String
+  color          String
+  createdAt      DateTime       @default(now())
+
+  // Relations
+  boardId        String
+  board          Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards          CardLabel[]
+
+  @@unique([boardId, name])
+  @@index([boardId])
+}
+
+// カードラベル（多対多の中間テーブル）
+model CardLabel {
+  id             String         @id @default(cuid())
+
+  // Relations
+  cardId         String
+  card           Card           @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  labelId        String
+  label          Label          @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, labelId])
+  @@index([cardId])
+  @@index([labelId])
+}
+
+// コメントモデル
+model Comment {
+  id             String         @id @default(cuid())
+  content        String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  cardId         String
+  card           Card           @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([userId])
+}
+
+// 添付ファイルモデル
+model Attachment {
+  id             String         @id @default(cuid())
+  filename       String
+  url            String
+  mimeType       String
+  size           Int
+  createdAt      DateTime       @default(now())
+
+  // Relations
+  cardId         String
+  card           Card           @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  uploaderId     String
+  uploader       User           @relation(fields: [uploaderId], references: [id])
+
+  @@index([cardId])
+  @@index([uploaderId])
+}
+
+// チェックリストモデル
+model Checklist {
+  id             String         @id @default(cuid())
+  title          String
+  position       Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  cardId         String
+  card           Card           @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items          ChecklistItem[]
+
+  @@unique([cardId, position])
+  @@index([cardId])
+}
+
+// チェックリストアイテムモデル
+model ChecklistItem {
+  id             String         @id @default(cuid())
+  content        String
+  isCompleted    Boolean        @default(false)
+  position       Int
+  completedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // Relations
+  checklistId    String
+  checklist      Checklist      @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@unique([checklistId, position])
+  @@index([checklistId])
+}
+
+// アクティビティログモデル
+model Activity {
+  id             String         @id @default(cuid())
+  action         ActivityType
+  entityType     EntityType
+  entityId       String
+  entityTitle    String
+  data           Json?
+  createdAt      DateTime       @default(now())
+
+  // Relations
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  boardId        String
+  board          Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cardId         String?
+  card           Card?          @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([boardId])
+  @@index([cardId])
+  @@index([createdAt])
+}
+
+// アクティビティタイプ
+enum ActivityType {
+  CREATE
+  UPDATE
+  DELETE
+  MOVE
+  ARCHIVE
+  UNARCHIVE
+  ASSIGN
+  UNASSIGN
+  COMMENT
+  ATTACH
+  DETACH
+  ADD_MEMBER
+  REMOVE_MEMBER
+}
+
+// エンティティタイプ
+enum EntityType {
+  BOARD
+  LIST
+  CARD
+  COMMENT
+  ATTACHMENT
+  CHECKLIST
+  LABEL
+}

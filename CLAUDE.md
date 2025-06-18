@@ -12,21 +12,47 @@ This is a full-stack TypeScript Kanban application using Turborepo monorepo:
 
 ## Architecture
 
-The project follows a monorepo structure with clear separation:
+The project follows a monorepo structure with clear separation and Clean Architecture principles:
 
-- `backend/` - Hono API server (port 3001)
-  - `src/index.ts` - Main server entry point with API endpoints
-  - `/api/message` - JSON API endpoint for frontend consumption
-  - CORS configuration for cross-origin requests
-  - Uses ESM modules and tsx for development
-  - Own package.json with backend-specific dependencies
-- `frontend/` - Next.js application (port 4001)
-  - `app/` - App Router structure with SSR implementation
-  - `lib/api.ts` - API client for backend communication
-  - Server-side rendering of API data
-  - Uses Geist fonts and CSS modules for styling
-  - Own package.json with frontend-specific dependencies
-- `compose.yml` - Docker development environment
+### Backend (`backend/`) - Clean Architecture Structure
+- **Clean Architecture Layers**:
+  - `src/domain/` - Business logic layer
+    - `entities/` - Business objects and domain models
+    - `repositories/` - Repository interfaces
+    - `usecases/` - Business rules and use cases
+  - `src/application/` - Application layer
+    - `controllers/` - Request/response handling
+    - `presenters/` - Data presentation logic
+    - `validators/` - Input validation
+  - `src/infrastructure/` - Infrastructure layer
+    - `database/` - Database connection and configuration
+    - `repositories/` - Repository implementations
+    - `external/` - External service integrations
+  - `src/interfaces/` - Interface layer
+    - `http/routes/` - HTTP route definitions
+    - `http/middleware/` - HTTP middleware
+    - `http/dto/` - Data transfer objects
+- **Database**: PostgreSQL with Prisma ORM
+  - Full Kanban schema with 11+ tables
+  - Migration system with `npm run db:migrate`
+  - Seed data system with `npm run db:seed`
+- **Technology Stack**:
+  - Hono web framework
+  - Prisma ORM with PostgreSQL
+  - ESM modules and tsx for development
+  - Port 3001 for API server
+
+### Frontend (`frontend/`) - Next.js Application
+- `app/` - App Router structure with SSR implementation
+- `lib/api.ts` - API client for backend communication
+- Server-side rendering of API data
+- Uses Geist fonts and CSS modules for styling
+- Own package.json with frontend-specific dependencies
+- Port 4001 for web application
+
+### Infrastructure
+- `compose.yml` - Docker development environment with PostgreSQL
+- PostgreSQL 16 running on port 5432
 
 ## Dependency Management
 
@@ -55,11 +81,17 @@ npx turbo build --filter=frontend  # Build only frontend
 
 ### Individual Package Development (Alternative)
 ```bash
+# Backend development
 cd backend
-npm run dev      # Development server with hot reload on port 3001
-npm run build    # TypeScript compilation to dist/
-npm start        # Production server
+npm run dev           # Development server with hot reload on port 3001
+npm run build         # TypeScript compilation to dist/
+npm start             # Production server
+npm run db:migrate    # Run database migrations
+npm run db:seed       # Insert seed data
+npm run db:reset      # Reset database (dev only)
+npm run db:studio     # Open Prisma Studio GUI
 
+# Frontend development
 cd frontend
 npm run dev      # Next.js dev server on port 4001 (Turbopack disabled)
 npm run build    # Production build
@@ -75,61 +107,111 @@ docker-compose up  # Start containerized development environment
 
 ## Key Technical Details
 
+### Build System & Workspaces
 - **Turborepo**: Handles task orchestration, caching, and parallel execution
 - **Workspaces**: NPM workspaces for dependency management
-- **Backend**: Runs on port 3001 with Hono framework
-  - REST API with `/api/message` endpoint
-  - CORS enabled for frontend communication
-  - JSON response format with message, timestamp, and version
-- **Frontend**: Runs on port 4001 with Next.js App Router
-  - Server-side rendering (SSR) of API data
-  - TypeScript strict mode enabled
-  - Turbopack disabled due to compatibility issues
-- **API Integration**: Full-stack communication with error handling
 - Both use modern TypeScript with ESNext/NodeNext modules
-- CSS styling uses CSS modules and custom properties
-- No test framework currently configured
-- No linting rules beyond Next.js defaults
+
+### Backend Architecture
+- **Framework**: Hono web framework on port 3001
+- **Database**: PostgreSQL 16 with Prisma ORM
+- **Architecture**: Clean Architecture with domain-driven design
+- **API Design**: RESTful endpoints with proper error handling
+- **Migration System**: Prisma-based schema versioning
+- **Database Schema**: Comprehensive Kanban application schema
+  - User management with authentication
+  - Board/List/Card hierarchy with position management
+  - Label system for categorization
+  - Comment and attachment features
+  - Activity logging for audit trails
+  - Role-based access control (OWNER/ADMIN/MEMBER/VIEWER)
+
+### Frontend Architecture  
+- **Framework**: Next.js 15.3.3 with App Router on port 4001
+- **Rendering**: Server-side rendering (SSR) of API data
+- **Styling**: CSS modules and custom properties
+- **TypeScript**: Strict mode enabled
+- **Turbopack**: Disabled due to compatibility issues
+
+### Database Schema
+The Kanban application uses a comprehensive PostgreSQL schema with:
+- **User**: Authentication and profile management
+- **Board**: Project workspaces with ownership
+- **BoardMember**: Role-based access control
+- **List**: Kanban columns with positioning
+- **Card**: Tasks with rich metadata (due dates, assignments, etc.)
+- **Label/CardLabel**: Flexible tagging system
+- **Comment**: Collaboration features
+- **Attachment**: File management
+- **Checklist/ChecklistItem**: Sub-task management
+- **Activity**: Comprehensive audit logging
+
+### Development Tools
+- **Database GUI**: Prisma Studio for data management
+- **Migration**: Automated schema versioning
+- **Seeding**: Sample data for development
+- **Type Safety**: Full end-to-end TypeScript coverage
 
 ## Current State
 
-The project has evolved from basic scaffolding to a functional full-stack application:
+The project has evolved from basic scaffolding to a well-architected Kanban application foundation:
 
-### Implemented Features
-- **Backend API**: Functional REST API with message endpoint
-  - `/api/message` returns JSON with Japanese message, timestamp, and version
-  - CORS configured for cross-origin requests from frontend
-  - Server running on port 3001 with proper error handling
+### Implemented Infrastructure
+- **Clean Architecture Backend**: Complete directory structure following domain-driven design
+  - Domain layer with entities, repositories, and use cases
+  - Application layer with controllers and validators
+  - Infrastructure layer with database and external integrations
+  - Interface layer with HTTP routes and DTOs
 
-- **Frontend Application**: SSR-enabled Next.js application
-  - Server-side rendering of API data on homepage
-  - API client with error handling and fallback UI
-  - Responsive design with CSS modules styling
-  - Server running on port 4001
+- **Database Architecture**: Production-ready PostgreSQL setup
+  - Comprehensive Kanban schema with 11+ tables
+  - Proper relationships with foreign keys and cascading deletes
+  - Optimized indexes for performance
+  - Migration system for schema versioning
+  - Seed data system for development
 
-- **Full-Stack Integration**: Complete API communication
-  - Frontend fetches data from backend during SSR
-  - Error handling for backend unavailability
-  - Real-time timestamp display from server responses
+- **Development Environment**: Docker-based PostgreSQL
+  - PostgreSQL 16 container with persistent volumes
+  - Automated database setup and migrations
+  - Prisma Studio for database management
+
+### Ready for Implementation
+- **Backend API**: Clean architecture structure ready for:
+  - User authentication and authorization
+  - Board management (CRUD operations)
+  - Card and list management with drag-and-drop support
+  - Real-time collaboration features
+  - File attachment handling
+
+- **Frontend Application**: Next.js foundation ready for:
+  - Kanban board UI components
+  - Drag-and-drop interactions
+  - Real-time updates
+  - User authentication flows
 
 ### Development Setup
 - Turborepo monorepo configuration working
-- Both servers can run simultaneously via `npm run dev`
-- All dependencies managed at root level (no individual node_modules)
-- Port separation eliminates conflicts (backend: 3001, frontend: 4001)
+- Database migrations and seeding automated
+- All dependencies managed at workspace level
+- Port separation: Backend (3001), Frontend (4001), PostgreSQL (5432)
 
 ### Access URLs
 - **Frontend Application**: http://localhost:4001
 - **Backend API**: http://localhost:3001
-- **API Message Endpoint**: http://localhost:3001/api/message
-- **Health Check**: http://localhost:3001/ (returns "Hello Hono!")
+- **Database**: PostgreSQL on localhost:5432
+- **Prisma Studio**: http://localhost:5555 (when running `npm run db:studio`)
 
-### Known Issues
-- Turbopack disabled due to compatibility issues
-- Docker setup references missing .devcontainer directory
+### Current Status
+- ✅ Clean Architecture structure implemented
+- ✅ Database schema and migrations complete
+- ✅ PostgreSQL integration working
+- ✅ Development environment containerized
+- 🔄 Ready for API endpoint implementation
+- 🔄 Ready for frontend Kanban UI development
 
-### Next Steps Recommendations
-- Add test framework (Jest/Vitest recommended)
-- Implement proper error boundaries in frontend
-- Add more API endpoints for Kanban functionality
-- Configure production build and deployment
+### Next Development Phase
+- Implement domain entities and use cases
+- Create repository implementations
+- Build REST API endpoints for Kanban operations
+- Develop frontend Kanban board interface
+- Add real-time collaboration features
