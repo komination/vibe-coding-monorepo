@@ -2,15 +2,15 @@
   "name": "backend",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target node",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
     "db:migrate": "prisma migrate dev",
     "db:migrate:create": "prisma migrate dev --create-only",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
-    "db:seed": "tsx src/infrastructure/database/seed.ts",
+    "db:seed": "bun src/infrastructure/database/seed.ts",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio"
   },
@@ -21,8 +21,9 @@
   "devDependencies": {
     "@prisma/client": "^6.10.0",
     "@types/node": "^20.11.17",
+    "bun-types": "^1.2.16",
     "prisma": "^6.10.0",
-    "tsx": "^4.7.1",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
 }
