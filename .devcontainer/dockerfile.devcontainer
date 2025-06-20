@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip
 RUN npm install -g @anthropic-ai/claude-code
 
-# Install Bun
-RUN curl -fsSL https://bun.sh/install | bash
-
 USER node
+
+# Install Bun for node user
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/home/node/.bun/bin:$PATH"
