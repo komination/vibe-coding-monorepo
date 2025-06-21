@@ -1,38 +1,75 @@
 import { Context, Next } from 'hono';
+import { VerifyTokenUseCase } from '@/domain/usecases/VerifyToken';
 
-// Temporary auth middleware - just sets a dummy user ID
-// TODO: Implement proper JWT authentication
+// Store the verify token use case instance
+let verifyTokenUseCase: VerifyTokenUseCase | null = null;
+
+// Initialize the auth middleware with dependencies
+export function initializeAuthMiddleware(verifyTokenUseCaseInstance: VerifyTokenUseCase) {
+  verifyTokenUseCase = verifyTokenUseCaseInstance;
+}
+
+// Required authentication middleware
 export async function authMiddleware(c: Context, next: Next) {
-  // For development, we'll use a dummy user ID
-  // In production, this should validate JWT tokens and extract user info
-  
+  if (!verifyTokenUseCase) {
+    throw new Error('Auth middleware not initialized. Call initializeAuthMiddleware first.');
+  }
+
   const authHeader = c.req.header('Authorization');
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    // For development, allow requests without auth but set a default user
-    // TODO: Remove this and require proper authentication
-    c.set('userId', 'demo-user-id');
-    await next();
-    return;
+    return c.json({ error: 'Authorization header required' }, 401);
   }
 
-  // TODO: Implement JWT token validation
-  // const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-  // const decoded = jwt.verify(token, JWT_SECRET);
-  // c.set('userId', decoded.userId);
-  
-  // For now, just set a dummy user ID
-  c.set('userId', 'demo-user-id');
-  await next();
+  try {
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const result = await verifyTokenUseCase.execute({ token });
+    
+    // Set user information in context
+    c.set('userId', result.user.id);
+    c.set('user', result.user);
+    c.set('tokenPayload', result.payload);
+    
+    await next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    
+    if (error instanceof Error) {
+      if (error.message === 'Invalid token' || error.message === 'Token expired') {
+        return c.json({ error: error.message }, 401);
+      }
+      if (error.message === 'User not found' || error.message === 'User account is inactive') {
+        return c.json({ error: 'Access denied' }, 403);
+      }
+    }
+    
+    return c.json({ error: 'Authentication failed' }, 401);
+  }
 }
 
 // Optional authentication - doesn't require auth but sets userId if available
 export async function optionalAuthMiddleware(c: Context, next: Next) {
+  if (!verifyTokenUseCase) {
+    // If auth middleware is not initialized, just continue without setting user
+    await next();
+    return;
+  }
+
   const authHeader = c.req.header('Authorization');
   
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    // TODO: Implement JWT token validation
-    c.set('userId', 'demo-user-id');
+    try {
+      const token = authHeader.substring(7);
+      const result = await verifyTokenUseCase.execute({ token });
+      
+      // Set user information in context
+      c.set('userId', result.user.id);
+      c.set('user', result.user);
+      c.set('tokenPayload', result.payload);
+    } catch (error) {
+      // For optional auth, we just ignore errors and continue without setting user
+      console.warn('Optional auth failed:', error);
+    }
   }
   
   await next();
