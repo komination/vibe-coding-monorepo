@@ -29,3 +29,12 @@ export class RateLimitError extends ApplicationError {
     super(message);
   }
 }
+
+export class TooManyRequestsError extends ApplicationError {
+  constructor(
+    message = 'Too many requests',
+    public readonly retryAfter?: number
+  ) {
+    super(message);
+  }
+}

@@ -13,7 +13,8 @@ import {
   ApplicationError,
   BadRequestError,
   AuthenticationError,
-  RateLimitError
+  RateLimitError,
+  TooManyRequestsError
 } from '@/application/errors/ApplicationError';
 import { serverConfig } from '@/infrastructure/config/env';
 
@@ -97,6 +98,14 @@ export function errorHandler(err: Error, c: Context): Response {
   else if (err instanceof RateLimitError) {
     status = 429;
     errorResponse.error = 'RateLimitExceeded';
+    errorResponse.message = err.message;
+    if (err.retryAfter) {
+      c.header('Retry-After', err.retryAfter.toString());
+    }
+  }
+  else if (err instanceof TooManyRequestsError) {
+    status = 429;
+    errorResponse.error = 'TooManyRequests';
     errorResponse.message = err.message;
     if (err.retryAfter) {
       c.header('Retry-After', err.retryAfter.toString());
