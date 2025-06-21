@@ -27,6 +27,9 @@ import { GetBoardUseCase } from '@/domain/usecases/GetBoard';
 import { UpdateBoardUseCase } from '@/domain/usecases/UpdateBoard';
 import { DeleteBoardUseCase } from '@/domain/usecases/DeleteBoard';
 import { GetUserBoardsUseCase } from '@/domain/usecases/GetUserBoards';
+import { AddBoardMemberUseCase } from '@/domain/usecases/AddBoardMember';
+import { UpdateMemberRoleUseCase } from '@/domain/usecases/UpdateMemberRole';
+import { RemoveBoardMemberUseCase } from '@/domain/usecases/RemoveBoardMember';
 import { CreateCardUseCase } from '@/domain/usecases/CreateCard';
 import { GetCard } from '@/domain/usecases/GetCard';
 import { UpdateCard } from '@/domain/usecases/UpdateCard';
@@ -84,6 +87,9 @@ export interface Container {
   updateBoardUseCase: UpdateBoardUseCase;
   deleteBoardUseCase: DeleteBoardUseCase;
   getUserBoardsUseCase: GetUserBoardsUseCase;
+  addBoardMemberUseCase: AddBoardMemberUseCase;
+  updateMemberRoleUseCase: UpdateMemberRoleUseCase;
+  removeBoardMemberUseCase: RemoveBoardMemberUseCase;
   
   // Card Use Cases
   createCardUseCase: CreateCardUseCase;
@@ -157,6 +163,21 @@ export function createContainer(prisma: PrismaClient): Container {
   const getUserBoardsUseCase = new GetUserBoardsUseCase(
     boardRepository,
     userRepository
+  );
+  const addBoardMemberUseCase = new AddBoardMemberUseCase(
+    boardRepository,
+    userRepository,
+    activityRepository
+  );
+  const updateMemberRoleUseCase = new UpdateMemberRoleUseCase(
+    boardRepository,
+    userRepository,
+    activityRepository
+  );
+  const removeBoardMemberUseCase = new RemoveBoardMemberUseCase(
+    boardRepository,
+    userRepository,
+    activityRepository
   );
   
   // Create card use cases
@@ -307,7 +328,10 @@ export function createContainer(prisma: PrismaClient): Container {
     getBoardUseCase,
     updateBoardUseCase,
     deleteBoardUseCase,
-    getUserBoardsUseCase
+    getUserBoardsUseCase,
+    addBoardMemberUseCase,
+    updateMemberRoleUseCase,
+    removeBoardMemberUseCase
   );
   const cardController = new CardController(
     createCardUseCase,
@@ -365,6 +389,9 @@ export function createContainer(prisma: PrismaClient): Container {
     updateBoardUseCase,
     deleteBoardUseCase,
     getUserBoardsUseCase,
+    addBoardMemberUseCase,
+    updateMemberRoleUseCase,
+    removeBoardMemberUseCase,
     
     // Card Use Cases
     createCardUseCase,

@@ -30,19 +30,19 @@ export function createBoardRoutes(boardController: BoardController, listControll
     return boardController.deleteBoard(c);
   });
 
-  // POST /api/boards/:id/members - Add a member to the board (TODO: implement)
+  // POST /api/boards/:id/members - Add a member to the board
   app.post('/:id/members', async (c) => {
-    return c.json({ error: 'Not implemented yet' }, 501);
+    return boardController.addMember(c);
   });
 
-  // PUT /api/boards/:id/members/:userId - Update member role (TODO: implement)
+  // PUT /api/boards/:id/members/:userId - Update member role
   app.put('/:id/members/:userId', async (c) => {
-    return c.json({ error: 'Not implemented yet' }, 501);
+    return boardController.updateMemberRole(c);
   });
 
-  // DELETE /api/boards/:id/members/:userId - Remove member from board (TODO: implement)
+  // DELETE /api/boards/:id/members/:userId - Remove member from board
   app.delete('/:id/members/:userId', async (c) => {
-    return c.json({ error: 'Not implemented yet' }, 501);
+    return boardController.removeMember(c);
   });
 
   // GET /api/boards/:id/lists - Get all lists in a board
