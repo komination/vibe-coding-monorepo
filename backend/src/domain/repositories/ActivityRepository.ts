@@ -1,5 +1,17 @@
 import { Activity, ActivityType, EntityType } from '@/domain/entities/Activity';
 
+export interface CreateActivityData {
+  type: ActivityType;
+  userId: string;
+  boardId: string;
+  entityType: EntityType;
+  entityId: string;
+  entityTitle: string;
+  description?: string;
+  cardId?: string;
+  data?: Record<string, any>;
+}
+
 export interface ActivityRepository {
   findById(id: string): Promise<Activity | null>;
   findByBoard(boardId: string, options?: {
@@ -24,6 +36,7 @@ export interface ActivityRepository {
     fromDate?: Date;
     toDate?: Date;
   }): Promise<Activity[]>;
+  create(data: CreateActivityData): Promise<Activity>;
   save(activity: Activity): Promise<void>;
   delete(id: string): Promise<void>;
   deleteByEntity(entityType: EntityType, entityId: string): Promise<void>;

@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target node",
+    "build": "bun build src/index.ts --outdir dist --target node --external bcrypt",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
     "db:migrate": "prisma migrate dev",

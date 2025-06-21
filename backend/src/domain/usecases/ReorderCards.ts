@@ -1,8 +1,8 @@
-import { UserRepository } from "../repositories/UserRepository.js";
-import { CardRepository } from "../repositories/CardRepository.js";
-import { BoardRepository } from "../repositories/BoardRepository.js";
-import { ListRepository } from "../repositories/ListRepository.js";
-import { ActivityRepository } from "../repositories/ActivityRepository.js";
+import { UserRepository } from "@/domain/repositories/UserRepository";
+import { CardRepository } from "@/domain/repositories/CardRepository";
+import { BoardRepository } from "@/domain/repositories/BoardRepository";
+import { ListRepository } from "@/domain/repositories/ListRepository";
+import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
 import { BoardRole } from "@prisma/client";
 
 export class ReorderCards {
@@ -63,12 +63,13 @@ export class ReorderCards {
       throw new Error("You don't have permission to reorder cards");
     }
 
-    // Reorder the cards
-    await this.cardRepository.reorderCards(listId, cardId, newPosition);
+    // Update the card position
+    card.updatePosition(newPosition);
+    await this.cardRepository.save(card);
 
     // Log activity
     await this.activityRepository.create({
-      type: "REORDER_CARD",
+      type: "MOVE",
       userId,
       boardId: list.boardId,
       entityType: "CARD",

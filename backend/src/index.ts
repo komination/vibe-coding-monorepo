@@ -32,10 +32,7 @@ app.get('/api/message', async(c) => {
   })
 })
 
-// Apply authentication middleware to all API routes
-app.use('/api/*', authMiddleware)
-
-// Mount API routes
+// Mount API routes (authentication middleware is applied selectively within routes)
 const apiRoutes = createApiRoutes(prisma)
 app.route('/api', apiRoutes)
 

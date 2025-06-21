@@ -104,6 +104,10 @@ export class Board {
     return this.props.ownerId === userId;
   }
 
+  isOwnedBy(userId: string): boolean {
+    return this.props.ownerId === userId;
+  }
+
   canBeEditedBy(userId: string, role: BoardRole): boolean {
     if (this.isOwner(userId)) return true;
     return role === 'ADMIN' || role === 'MEMBER';

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Activity, ActivityType, EntityType } from '@/domain/entities/Activity';
-import { ActivityRepository } from '@/domain/repositories/ActivityRepository';
+import { ActivityRepository, CreateActivityData } from '@/domain/repositories/ActivityRepository';
 
 export class PrismaActivityRepository implements ActivityRepository {
   constructor(private prisma: PrismaClient) {}
@@ -126,6 +126,30 @@ export class PrismaActivityRepository implements ActivityRepository {
     });
 
     return this.mapToDomainActivities(activitiesData);
+  }
+
+  async create(data: CreateActivityData): Promise<Activity> {
+    // Create Activity entity with provided data
+    const activityData = {
+      description: data.description,
+      ...data.data
+    };
+
+    const activity = Activity.create({
+      action: data.type,
+      entityType: data.entityType,
+      entityId: data.entityId,
+      entityTitle: data.entityTitle,
+      data: activityData,
+      userId: data.userId,
+      boardId: data.boardId,
+      cardId: data.cardId,
+    });
+
+    // Save to database
+    await this.save(activity);
+    
+    return activity;
   }
 
   async save(activity: Activity): Promise<void> {

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { LabelController } from '@/application/controllers/index';
+import { LabelController } from '@/application/controllers/LabelController';
 
 export function createLabelRoutes(labelController: LabelController) {
   const app = new Hono();

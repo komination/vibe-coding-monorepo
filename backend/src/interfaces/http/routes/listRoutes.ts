@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { ListController } from '@/application/controllers/index';
+import { ListController } from '@/application/controllers/ListController';
 
 export function createListRoutes(listController: ListController) {
   const app = new Hono();

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
-import { BoardController, ListController } from '@/application/controllers/index';
+import { BoardController } from '@/application/controllers/BoardController';
+import { ListController } from '@/application/controllers/ListController';
 
 export function createBoardRoutes(boardController: BoardController, listController: ListController) {
   const app = new Hono();

@@ -1,8 +1,8 @@
-import { Card } from "../entities/Card.js";
-import { UserRepository } from "../repositories/UserRepository.js";
-import { CardRepository } from "../repositories/CardRepository.js";
-import { BoardRepository } from "../repositories/BoardRepository.js";
-import { ListRepository } from "../repositories/ListRepository.js";
+import { Card } from "@/domain/entities/Card";
+import { UserRepository } from "@/domain/repositories/UserRepository";
+import { CardRepository } from "@/domain/repositories/CardRepository";
+import { BoardRepository } from "@/domain/repositories/BoardRepository";
+import { ListRepository } from "@/domain/repositories/ListRepository";
 
 export class GetListCards {
   constructor(
@@ -44,6 +44,6 @@ export class GetListCards {
     const cards = await this.cardRepository.findByList(listId);
     
     // Filter out archived cards unless specifically requested
-    return cards.filter(card => !card.archived);
+    return cards.filter(card => !card.isArchived);
   }
 }

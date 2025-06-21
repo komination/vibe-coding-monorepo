@@ -1,8 +1,9 @@
-import { Card } from "../entities/Card.js";
-import { UserRepository } from "../repositories/UserRepository.js";
-import { CardRepository } from "../repositories/CardRepository.js";
-import { BoardRepository } from "../repositories/BoardRepository.js";
-import { ActivityRepository } from "../repositories/ActivityRepository.js";
+import { Card } from "@/domain/entities/Card";
+import { UserRepository } from "@/domain/repositories/UserRepository";
+import { CardRepository } from "@/domain/repositories/CardRepository";
+import { BoardRepository } from "@/domain/repositories/BoardRepository";
+import { ListRepository } from "@/domain/repositories/ListRepository";
+import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
 import { BoardRole } from "@prisma/client";
 
 interface UpdateCardData {
@@ -20,6 +21,7 @@ export class UpdateCard {
     private cardRepository: CardRepository,
     private userRepository: UserRepository,
     private boardRepository: BoardRepository,
+    private listRepository: ListRepository,
     private activityRepository: ActivityRepository
   ) {}
 
@@ -40,14 +42,20 @@ export class UpdateCard {
       throw new Error("Card not found");
     }
 
+    // Get the list to access board information
+    const list = await this.listRepository.findById(card.listId);
+    if (!list) {
+      throw new Error("List not found");
+    }
+
     // Check if user has permission to update
-    const board = await this.boardRepository.findById(card.boardId);
+    const board = await this.boardRepository.findById(list.boardId);
     if (!board) {
       throw new Error("Board not found");
     }
 
     const memberRole = await this.boardRepository.getMemberRole(
-      card.boardId,
+      list.boardId,
       userId
     );
 
@@ -63,19 +71,19 @@ export class UpdateCard {
     // Track changes for activity log
     const changes: string[] = [];
 
-    // Update card properties
+    // Update card properties using entity methods
     if (data.title !== undefined && data.title !== card.title) {
       changes.push(`changed title from "${card.title}" to "${data.title}"`);
-      card.title = data.title;
+      card.updateTitle(data.title);
     }
 
     if (data.description !== undefined && data.description !== card.description) {
       changes.push("updated description");
-      card.description = data.description;
+      card.updateDescription(data.description);
     }
 
     if (data.position !== undefined && data.position !== card.position) {
-      card.position = data.position;
+      card.updatePosition(data.position);
     }
 
     if (data.dueDate !== undefined) {
@@ -85,7 +93,7 @@ export class UpdateCard {
             ? `set due date to ${data.dueDate.toLocaleDateString()}`
             : "removed due date"
         );
-        card.dueDate = data.dueDate;
+        card.updateDueDate(data.dueDate || undefined);
       }
     }
 
@@ -96,12 +104,12 @@ export class UpdateCard {
             ? `set start date to ${data.startDate.toLocaleDateString()}`
             : "removed start date"
         );
-        card.startDate = data.startDate;
+        card.updateStartDate(data.startDate || undefined);
       }
     }
 
     if (data.assignedToId !== undefined) {
-      if (data.assignedToId !== card.assignedToId) {
+      if (data.assignedToId !== card.assigneeId) {
         if (data.assignedToId) {
           const assignee = await this.userRepository.findById(data.assignedToId);
           if (!assignee) {
@@ -111,11 +119,11 @@ export class UpdateCard {
         } else {
           changes.push("removed assignee");
         }
-        card.assignedToId = data.assignedToId;
+        card.assignTo(data.assignedToId || undefined);
       }
     }
 
-    if (data.archived !== undefined && data.archived !== card.archived) {
+    if (data.archived !== undefined && data.archived !== card.isArchived) {
       if (data.archived) {
         card.archive();
         changes.push("archived card");
@@ -131,15 +139,14 @@ export class UpdateCard {
     }
 
     // Update the card
-    card.updatedAt = new Date();
-    const updatedCard = await this.cardRepository.save(card);
+    await this.cardRepository.save(card);
 
     // Log activity if there were changes
     if (changes.length > 0) {
       await this.activityRepository.create({
-        type: "UPDATE_CARD",
+        type: "UPDATE",
         userId,
-        boardId: card.boardId,
+        boardId: list.boardId,
         entityType: "CARD",
         entityId: card.id,
         entityTitle: card.title,
@@ -147,6 +154,6 @@ export class UpdateCard {
       });
     }
 
-    return updatedCard;
+    return card;
   }
 }

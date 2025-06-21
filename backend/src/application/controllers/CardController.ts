@@ -1,15 +1,13 @@
 import { Context } from 'hono';
-import { 
-  CreateCardUseCase,
-  GetCard,
-  UpdateCard,
-  MoveCard,
-  DeleteCard,
-  GetListCards,
-  ArchiveCard,
-  UnarchiveCard,
-  ReorderCards
-} from '@/domain/usecases';
+import { CreateCardUseCase } from '@/domain/usecases/CreateCard';
+import { GetCard } from '@/domain/usecases/GetCard';
+import { UpdateCard } from '@/domain/usecases/UpdateCard';
+import { MoveCard } from '@/domain/usecases/MoveCard';
+import { DeleteCard } from '@/domain/usecases/DeleteCard';
+import { GetListCards } from '@/domain/usecases/GetListCards';
+import { ArchiveCard } from '@/domain/usecases/ArchiveCard';
+import { UnarchiveCard } from '@/domain/usecases/UnarchiveCard';
+import { ReorderCards } from '@/domain/usecases/ReorderCards';
 import { CardValidator } from '@/application/validators/CardValidator';
 import { CardResponseDto, CardListResponseDto } from '@/interfaces/http/dto/CardDto';
 import { Card } from '@/domain/entities/Card';

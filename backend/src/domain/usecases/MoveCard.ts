@@ -1,9 +1,9 @@
-import { Card } from "../entities/Card.js";
-import { UserRepository } from "../repositories/UserRepository.js";
-import { CardRepository } from "../repositories/CardRepository.js";
-import { BoardRepository } from "../repositories/BoardRepository.js";
-import { ListRepository } from "../repositories/ListRepository.js";
-import { ActivityRepository } from "../repositories/ActivityRepository.js";
+import { Card } from "@/domain/entities/Card";
+import { UserRepository } from "@/domain/repositories/UserRepository";
+import { CardRepository } from "@/domain/repositories/CardRepository";
+import { BoardRepository } from "@/domain/repositories/BoardRepository";
+import { ListRepository } from "@/domain/repositories/ListRepository";
+import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
 import { BoardRole } from "@prisma/client";
 
 export class MoveCard {
@@ -49,14 +49,14 @@ export class MoveCard {
       throw new Error("Cannot move card between different boards");
     }
 
-    // Check if user has permission
-    const board = await this.boardRepository.findById(card.boardId);
+    // Check if user has permission (use source list's board)
+    const board = await this.boardRepository.findById(sourceList.boardId);
     if (!board) {
       throw new Error("Board not found");
     }
 
     const memberRole = await this.boardRepository.getMemberRole(
-      card.boardId,
+      sourceList.boardId,
       userId
     );
 
@@ -73,17 +73,10 @@ export class MoveCard {
     const isMovingToSameList = card.listId === targetListId;
     const previousListTitle = sourceList.title;
     
-    card.moveToList(targetListId);
-    card.position = position;
-    card.updatedAt = new Date();
+    card.moveToList(targetListId, position);
 
-    // If moving within the same list, just reorder
-    if (isMovingToSameList) {
-      await this.cardRepository.reorderCards(targetListId, cardId, position);
-    } else {
-      // Moving to a different list
-      await this.cardRepository.moveToList(cardId, targetListId, position);
-    }
+    // Save the updated card regardless of whether it's moving within same list or not
+    await this.cardRepository.save(card);
 
     // Get the updated card
     const updatedCard = await this.cardRepository.findById(cardId);
@@ -97,9 +90,9 @@ export class MoveCard {
       : `moved card from ${previousListTitle} to ${targetList.title}`;
 
     await this.activityRepository.create({
-      type: "MOVE_CARD",
+      type: "MOVE",
       userId,
-      boardId: card.boardId,
+      boardId: sourceList.boardId,
       entityType: "CARD",
       entityId: card.id,
       entityTitle: card.title,

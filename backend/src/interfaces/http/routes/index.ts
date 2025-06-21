@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client';
 
-// Import repositories using relative paths
+// Import repositories using direct paths
 import { PrismaUserRepository } from '@/infrastructure/repositories/PrismaUserRepository';
 import { PrismaBoardRepository } from '@/infrastructure/repositories/PrismaBoardRepository';
 import { PrismaCardRepository } from '@/infrastructure/repositories/PrismaCardRepository';
@@ -9,7 +9,7 @@ import { PrismaActivityRepository } from '@/infrastructure/repositories/PrismaAc
 import { PrismaListRepository } from '@/infrastructure/repositories/PrismaListRepository';
 import { PrismaLabelRepository } from '@/infrastructure/repositories/PrismaLabelRepository';
 
-// Import use cases using relative paths
+// Import use cases using direct paths
 import { CreateBoardUseCase } from '@/domain/usecases/CreateBoard';
 import { GetBoardUseCase } from '@/domain/usecases/GetBoard';
 import { UpdateBoardUseCase } from '@/domain/usecases/UpdateBoard';
@@ -35,6 +35,8 @@ import { LoginUserUseCase } from '@/domain/usecases/LoginUser';
 import { VerifyTokenUseCase } from '@/domain/usecases/VerifyToken';
 import { GetUserProfileUseCase } from '@/domain/usecases/GetUserProfile';
 import { RefreshTokenUseCase } from '@/domain/usecases/RefreshToken';
+import { UpdateUserProfileUseCase } from '@/domain/usecases/UpdateUserProfile';
+import { ChangePasswordUseCase } from '@/domain/usecases/ChangePassword';
 import { CreateLabelUseCase } from '@/domain/usecases/CreateLabel';
 import { GetBoardLabelsUseCase } from '@/domain/usecases/GetBoardLabels';
 import { UpdateLabelUseCase } from '@/domain/usecases/UpdateLabel';
@@ -43,7 +45,7 @@ import { AddLabelToCardUseCase } from '@/domain/usecases/AddLabelToCard';
 import { RemoveLabelFromCardUseCase } from '@/domain/usecases/RemoveLabelFromCard';
 import { GetCardLabelsUseCase } from '@/domain/usecases/GetCardLabels';
 
-// Import controllers using relative paths
+// Import controllers using direct paths
 import { BoardController } from '@/application/controllers/BoardController';
 import { CardController } from '@/application/controllers/CardController';
 import { ListController } from '@/application/controllers/ListController';
@@ -100,12 +102,14 @@ export function createApiRoutes(prisma: PrismaClient) {
     cardRepository,
     userRepository,
     boardRepository,
+    listRepository,
     activityRepository
   );
   const updateCardUseCase = new UpdateCard(
     cardRepository,
     userRepository,
     boardRepository,
+    listRepository,
     activityRepository
   );
   const moveCardUseCase = new MoveCard(
@@ -119,6 +123,7 @@ export function createApiRoutes(prisma: PrismaClient) {
     cardRepository,
     userRepository,
     boardRepository,
+    listRepository,
     activityRepository
   );
   const getListCardsUseCase = new GetListCards(
@@ -131,12 +136,14 @@ export function createApiRoutes(prisma: PrismaClient) {
     cardRepository,
     userRepository,
     boardRepository,
+    listRepository,
     activityRepository
   );
   const unarchiveCardUseCase = new UnarchiveCard(
     cardRepository,
     userRepository,
     boardRepository,
+    listRepository,
     activityRepository
   );
   const reorderCardsUseCase = new ReorderCards(
@@ -183,6 +190,8 @@ export function createApiRoutes(prisma: PrismaClient) {
   const verifyTokenUseCase = new VerifyTokenUseCase(userRepository);
   const getUserProfileUseCase = new GetUserProfileUseCase(userRepository);
   const refreshTokenUseCase = new RefreshTokenUseCase(userRepository);
+  const updateUserProfileUseCase = new UpdateUserProfileUseCase(userRepository);
+  const changePasswordUseCase = new ChangePasswordUseCase(userRepository);
   
   // Initialize label use cases
   const createLabelUseCase = new CreateLabelUseCase(
@@ -259,7 +268,9 @@ export function createApiRoutes(prisma: PrismaClient) {
     registerUserUseCase,
     loginUserUseCase,
     getUserProfileUseCase,
-    refreshTokenUseCase
+    refreshTokenUseCase,
+    updateUserProfileUseCase,
+    changePasswordUseCase
   );
   const labelController = new LabelController(
     createLabelUseCase,
@@ -282,6 +293,8 @@ export function createApiRoutes(prisma: PrismaClient) {
   app.use('/lists/*', authMiddleware);
   app.use('/labels/*', authMiddleware);
   app.use('/auth/me', authMiddleware);
+  app.use('/auth/profile', authMiddleware);
+  app.use('/auth/password', authMiddleware);
   
   app.route('/boards', createBoardRoutes(boardController, listController));
   app.route('/cards', createCardRoutes(cardController));

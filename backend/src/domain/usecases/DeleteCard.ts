@@ -1,7 +1,8 @@
-import { UserRepository } from "../repositories/UserRepository.js";
-import { CardRepository } from "../repositories/CardRepository.js";
-import { BoardRepository } from "../repositories/BoardRepository.js";
-import { ActivityRepository } from "../repositories/ActivityRepository.js";
+import { UserRepository } from "@/domain/repositories/UserRepository";
+import { CardRepository } from "@/domain/repositories/CardRepository";
+import { BoardRepository } from "@/domain/repositories/BoardRepository";
+import { ListRepository } from "@/domain/repositories/ListRepository";
+import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
 import { BoardRole } from "@prisma/client";
 
 export class DeleteCard {
@@ -9,6 +10,7 @@ export class DeleteCard {
     private cardRepository: CardRepository,
     private userRepository: UserRepository,
     private boardRepository: BoardRepository,
+    private listRepository: ListRepository,
     private activityRepository: ActivityRepository
   ) {}
 
@@ -25,14 +27,20 @@ export class DeleteCard {
       throw new Error("Card not found");
     }
 
+    // Get the list to access board information
+    const list = await this.listRepository.findById(card.listId);
+    if (!list) {
+      throw new Error("List not found");
+    }
+
     // Check if user has permission
-    const board = await this.boardRepository.findById(card.boardId);
+    const board = await this.boardRepository.findById(list.boardId);
     if (!board) {
       throw new Error("Board not found");
     }
 
     const memberRole = await this.boardRepository.getMemberRole(
-      card.boardId,
+      list.boardId,
       userId
     );
 
@@ -47,14 +55,14 @@ export class DeleteCard {
 
     // Store card info for activity log before deletion
     const cardTitle = card.title;
-    const boardId = card.boardId;
+    const boardId = list.boardId;
 
     // Delete the card
     await this.cardRepository.delete(cardId);
 
     // Log activity
     await this.activityRepository.create({
-      type: "DELETE_CARD",
+      type: "DELETE",
       userId,
       boardId,
       entityType: "CARD",

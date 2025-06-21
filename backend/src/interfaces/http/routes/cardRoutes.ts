@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { CardController } from '@/application/controllers/index';
+import { CardController } from '@/application/controllers/CardController';
 
 export function createCardRoutes(cardController: CardController) {
   const app = new Hono();
