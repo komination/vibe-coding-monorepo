@@ -1,7 +1,10 @@
 import { User } from '@/domain/entities/User';
 import { UserRepository } from '@/domain/repositories/UserRepository';
+import { UnauthorizedError, BusinessRuleViolationError } from '@/domain/errors/DomainError';
+import { jwtConfig } from '@/infrastructure/config/env';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import type { SignOptions } from 'jsonwebtoken';
 
 export interface LoginUserRequest {
   identifier: string; // email or username
@@ -32,46 +35,41 @@ export class LoginUserUseCase {
     }
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     // Check if user is active
     if (!user.isActive) {
-      throw new Error('Account is inactive');
+      throw new BusinessRuleViolationError('Account is inactive');
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     // Generate JWT tokens
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET environment variable is not set');
-    }
-
     const tokenPayload = {
       userId: user.id,
       email: user.email,
       username: user.username,
     };
 
-    // Access token (expires in 1 hour)
-    const token = jwt.sign(tokenPayload, jwtSecret, {
-      expiresIn: '1h',
-      issuer: 'kanban-app',
+    // Access token
+    const token = jwt.sign(tokenPayload, jwtConfig.secret, {
+      expiresIn: jwtConfig.accessTokenExpiresIn as any,
+      issuer: jwtConfig.issuer,
       subject: user.id,
     });
 
-    // Refresh token (expires in 7 days)
+    // Refresh token
     const refreshToken = jwt.sign(
       { userId: user.id, type: 'refresh' },
-      jwtSecret,
+      jwtConfig.secret,
       {
-        expiresIn: '7d',
-        issuer: 'kanban-app',
+        expiresIn: jwtConfig.refreshTokenExpiresIn as any,
+        issuer: jwtConfig.issuer,
         subject: user.id,
       }
     );

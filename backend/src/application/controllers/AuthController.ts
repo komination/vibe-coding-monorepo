@@ -43,11 +43,10 @@ export class AuthController {
       console.error('Error registering user:', error);
       
       if (error instanceof Error) {
-        // Handle specific errors
-        if (error.message.includes('already exists') || 
-            error.message.includes('Invalid email') ||
-            error.message.includes('Username') ||
-            error.message.includes('Password')) {
+        if (error.message.includes('already exists') || error.message.includes('duplicate')) {
+          return c.json({ error: 'User already exists' }, 409);
+        }
+        if (error.message.includes('validation') || error.message.includes('invalid')) {
           return c.json({ error: error.message }, 400);
         }
       }
@@ -85,9 +84,14 @@ export class AuthController {
       console.error('Error logging in user:', error);
       
       if (error instanceof Error) {
-        if (error.message === 'Invalid credentials' || 
-            error.message === 'Account is inactive') {
-          return c.json({ error: error.message }, 401);
+        if (error.message === 'Invalid credentials') {
+          return c.json({ error: 'Invalid credentials' }, 401);
+        }
+        if (error.message === 'Account is inactive') {
+          return c.json({ error: 'Account is inactive' }, 403);
+        }
+        if (error.message.includes('validation') || error.message.includes('invalid')) {
+          return c.json({ error: error.message }, 400);
         }
       }
       

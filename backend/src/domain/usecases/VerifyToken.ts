@@ -1,5 +1,6 @@
 import { User } from '@/domain/entities/User';
 import { UserRepository } from '@/domain/repositories/UserRepository';
+import { jwtConfig } from '@/infrastructure/config/env';
 import * as jwt from 'jsonwebtoken';
 
 export interface VerifyTokenRequest {
@@ -25,14 +26,9 @@ export class VerifyTokenUseCase {
   async execute(request: VerifyTokenRequest): Promise<VerifyTokenResponse> {
     const { token } = request;
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET environment variable is not set');
-    }
-
     try {
       // Verify and decode token
-      const payload = jwt.verify(token, jwtSecret) as any;
+      const payload = jwt.verify(token, jwtConfig.secret) as any;
 
       // Validate payload structure
       if (!payload.userId || !payload.email || !payload.username) {
@@ -42,6 +38,16 @@ export class VerifyTokenUseCase {
       // Check if token is not a refresh token
       if (payload.type === 'refresh') {
         throw new Error('Refresh token cannot be used for authentication');
+      }
+
+      // Validate token issuer
+      if (payload.iss !== jwtConfig.issuer) {
+        throw new Error('Invalid token issuer');
+      }
+
+      // Validate token subject matches userId
+      if (payload.sub !== payload.userId) {
+        throw new Error('Invalid token subject');
       }
 
       // Find user by ID
@@ -59,17 +65,21 @@ export class VerifyTokenUseCase {
 
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {
-        throw new Error('Invalid token');
+        throw new Error(`Invalid token: ${error.message}`);
       }
       if (error instanceof jwt.TokenExpiredError) {
         throw new Error('Token expired');
       }
       if (error instanceof jwt.NotBeforeError) {
-        throw new Error('Token not active');
+        throw new Error('Token not yet active');
       }
       
-      // Re-throw our custom errors
-      throw error;
+      // Re-throw our custom errors with enhanced context
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      throw new Error('Token verification failed');
     }
   }
 }

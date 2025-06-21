@@ -1,6 +1,8 @@
 import { User } from '@/domain/entities/User';
 import { UserRepository } from '@/domain/repositories/UserRepository';
+import { jwtConfig } from '@/infrastructure/config/env';
 import * as jwt from 'jsonwebtoken';
+import type { SignOptions } from 'jsonwebtoken';
 
 export interface RefreshTokenRequest {
   refreshToken: string;
@@ -18,18 +20,23 @@ export class RefreshTokenUseCase {
   async execute(request: RefreshTokenRequest): Promise<RefreshTokenResponse> {
     const { refreshToken } = request;
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET environment variable is not set');
-    }
-
     try {
       // Verify and decode refresh token
-      const payload = jwt.verify(refreshToken, jwtSecret) as any;
+      const payload = jwt.verify(refreshToken, jwtConfig.secret) as any;
 
       // Validate it's a refresh token
       if (payload.type !== 'refresh') {
         throw new Error('Invalid refresh token');
+      }
+
+      // Validate token issuer
+      if (payload.iss !== jwtConfig.issuer) {
+        throw new Error('Invalid token issuer');
+      }
+
+      // Validate token subject matches userId
+      if (payload.sub !== payload.userId) {
+        throw new Error('Invalid token subject');
       }
 
       // Find user
@@ -50,20 +57,20 @@ export class RefreshTokenUseCase {
         username: user.username,
       };
 
-      // New access token (expires in 1 hour)
-      const newToken = jwt.sign(tokenPayload, jwtSecret, {
-        expiresIn: '1h',
-        issuer: 'kanban-app',
+      // New access token
+      const newToken = jwt.sign(tokenPayload, jwtConfig.secret, {
+        expiresIn: jwtConfig.accessTokenExpiresIn as any,
+        issuer: jwtConfig.issuer,
         subject: user.id,
       });
 
-      // New refresh token (expires in 7 days)
+      // New refresh token
       const newRefreshToken = jwt.sign(
         { userId: user.id, type: 'refresh' },
-        jwtSecret,
+        jwtConfig.secret,
         {
-          expiresIn: '7d',
-          issuer: 'kanban-app',
+          expiresIn: jwtConfig.refreshTokenExpiresIn as any,
+          issuer: jwtConfig.issuer,
           subject: user.id,
         }
       );
@@ -76,17 +83,21 @@ export class RefreshTokenUseCase {
 
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {
-        throw new Error('Invalid refresh token');
+        throw new Error(`Invalid refresh token: ${error.message}`);
       }
       if (error instanceof jwt.TokenExpiredError) {
         throw new Error('Refresh token expired');
       }
       if (error instanceof jwt.NotBeforeError) {
-        throw new Error('Refresh token not active');
+        throw new Error('Refresh token not yet active');
       }
       
-      // Re-throw our custom errors
-      throw error;
+      // Re-throw our custom errors with enhanced context
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      throw new Error('Refresh token verification failed');
     }
   }
 }

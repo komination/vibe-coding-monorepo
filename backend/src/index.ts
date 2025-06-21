@@ -1,15 +1,17 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { serverConfig, appConfig } from '@/infrastructure/config/env'
 import { prisma, connectDatabase } from '@/infrastructure/database/prisma'
 import { createApiRoutes } from '@/interfaces/http/routes/index'
-import { authMiddleware } from '@/interfaces/http/middleware/auth'
+import { errorHandler } from '@/interfaces/http/middleware/errorHandler'
+// authMiddleware is now created inside createApiRoutes
 
 const app = new Hono()
 
 // CORS設定
 app.use('/*', cors({
-  origin: 'http://localhost:4001',
+  origin: appConfig.frontendUrl,
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
 }))
@@ -37,13 +39,7 @@ const apiRoutes = createApiRoutes(prisma)
 app.route('/api', apiRoutes)
 
 // Global error handler
-app.onError((err, c) => {
-  console.error('Unhandled error:', err)
-  return c.json({ 
-    error: 'Internal server error',
-    timestamp: new Date().toISOString()
-  }, 500)
-})
+app.onError(errorHandler)
 
 // 404 handler
 app.notFound((c) => {
@@ -63,10 +59,11 @@ async function startServer() {
     // Start HTTP server
     serve({
       fetch: app.fetch,
-      port: 3001
+      port: serverConfig.port
     }, (info) => {
-      console.log(`🚀 Kanban API Server is running on http://localhost:${info.port}`)
+      console.log(`🚀 ${appConfig.name} Server is running on http://localhost:${info.port}`)
       console.log(`📊 Health check: http://localhost:${info.port}/api/health`)
+      console.log(`🌍 Environment: ${serverConfig.nodeEnv}`)
     })
   } catch (error) {
     console.error('Failed to start server:', error)
