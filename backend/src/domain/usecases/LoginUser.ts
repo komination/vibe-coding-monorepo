@@ -1,10 +1,10 @@
 import { User } from '@/domain/entities/User';
 import { UserRepository } from '@/domain/repositories/UserRepository';
 import { UnauthorizedError, BusinessRuleViolationError } from '@/domain/errors/DomainError';
+import { JWTAccessTokenPayload, JWTRefreshTokenPayload } from '@/domain/types/jwt';
 import { jwtConfig } from '@/infrastructure/config/env';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import type { SignOptions } from 'jsonwebtoken';
 
 export interface LoginUserRequest {
   identifier: string; // email or username
@@ -28,10 +28,11 @@ export class LoginUserUseCase {
     
     // Check if identifier is an email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailRegex.test(identifier)) {
-      user = await this.userRepository.findByEmail(identifier.toLowerCase().trim());
+    const trimmedIdentifier = identifier.trim();
+    if (emailRegex.test(trimmedIdentifier)) {
+      user = await this.userRepository.findByEmail(trimmedIdentifier.toLowerCase());
     } else {
-      user = await this.userRepository.findByUsername(identifier.trim());
+      user = await this.userRepository.findByUsername(trimmedIdentifier);
     }
 
     if (!user) {
@@ -50,29 +51,31 @@ export class LoginUserUseCase {
     }
 
     // Generate JWT tokens
-    const tokenPayload = {
+    const accessTokenPayload: JWTAccessTokenPayload = {
       userId: user.id,
       email: user.email,
       username: user.username,
+      type: 'access',
     };
 
     // Access token
-    const token = jwt.sign(tokenPayload, jwtConfig.secret, {
-      expiresIn: jwtConfig.accessTokenExpiresIn as any,
+    const token = jwt.sign(accessTokenPayload, jwtConfig.secret, {
+      expiresIn: jwtConfig.accessTokenExpiresIn,
       issuer: jwtConfig.issuer,
       subject: user.id,
     });
 
     // Refresh token
-    const refreshToken = jwt.sign(
-      { userId: user.id, type: 'refresh' },
-      jwtConfig.secret,
-      {
-        expiresIn: jwtConfig.refreshTokenExpiresIn as any,
-        issuer: jwtConfig.issuer,
-        subject: user.id,
-      }
-    );
+    const refreshTokenPayload: JWTRefreshTokenPayload = {
+      userId: user.id,
+      type: 'refresh',
+    };
+    
+    const refreshToken = jwt.sign(refreshTokenPayload, jwtConfig.secret, {
+      expiresIn: jwtConfig.refreshTokenExpiresIn,
+      issuer: jwtConfig.issuer,
+      subject: user.id,
+    });
 
     return { user, token, refreshToken };
   }

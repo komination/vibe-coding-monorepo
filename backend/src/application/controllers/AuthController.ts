@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { RegisterUserUseCase } from '@/domain/usecases/RegisterUser';
 import { LoginUserUseCase } from '@/domain/usecases/LoginUser';
+import { LogoutUserUseCase } from '@/domain/usecases/LogoutUser';
 import { GetUserProfileUseCase } from '@/domain/usecases/GetUserProfile';
 import { RefreshTokenUseCase } from '@/domain/usecases/RefreshToken';
 import { UpdateUserProfileUseCase } from '@/domain/usecases/UpdateUserProfile';
@@ -13,6 +14,7 @@ export class AuthController {
   constructor(
     private registerUserUseCase: RegisterUserUseCase,
     private loginUserUseCase: LoginUserUseCase,
+    private logoutUserUseCase: LogoutUserUseCase,
     private getUserProfileUseCase: GetUserProfileUseCase,
     private refreshTokenUseCase: RefreshTokenUseCase,
     private updateUserProfileUseCase: UpdateUserProfileUseCase,
@@ -177,9 +179,30 @@ export class AuthController {
   }
 
   async logout(c: Context) {
-    // For JWT tokens, logout is handled client-side by removing the token
-    // In a more sophisticated implementation, you might maintain a blacklist
-    return c.json({ message: 'Logged out successfully' });
+    try {
+      const authHeader = c.req.header('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ message: 'Logged out successfully' });
+      }
+
+      const token = authHeader.substring(7);
+      
+      // Parse refresh token from body if provided
+      const body = await c.req.json().catch(() => ({}));
+      const refreshToken = body.refreshToken;
+
+      // Execute logout use case to blacklist tokens
+      await this.logoutUserUseCase.execute({
+        token,
+        refreshToken,
+      });
+
+      return c.json({ message: 'Logged out successfully' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, return success since client will remove tokens
+      return c.json({ message: 'Logged out successfully' });
+    }
   }
 
   async updateProfile(c: Context) {

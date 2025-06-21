@@ -26,6 +26,10 @@ const envSchema = z.object({
   ENABLE_REGISTRATION: z.string().default('true').transform(val => val === 'true'),
   MAX_LOGIN_ATTEMPTS: z.string().default('5').transform(Number),
   LOGIN_LOCKOUT_DURATION: z.string().default('15').transform(Number), // minutes
+  
+  // Redis (optional for token blacklist)
+  REDIS_URL: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional(),
 });
 
 // Type for validated environment variables
@@ -73,4 +77,9 @@ export const appConfig = {
   enableRegistration: env.ENABLE_REGISTRATION,
   maxLoginAttempts: env.MAX_LOGIN_ATTEMPTS,
   loginLockoutDuration: env.LOGIN_LOCKOUT_DURATION,
+} as const;
+
+export const redisConfig = {
+  url: env.REDIS_URL,
+  password: env.REDIS_PASSWORD,
 } as const;

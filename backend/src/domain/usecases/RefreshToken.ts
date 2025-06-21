@@ -1,8 +1,10 @@
 import { User } from '@/domain/entities/User';
 import { UserRepository } from '@/domain/repositories/UserRepository';
+import { UnauthorizedError } from '@/domain/errors/DomainError';
+import { JWTTokenPayload, JWTAccessTokenPayload, JWTRefreshTokenPayload, isRefreshToken } from '@/domain/types/jwt';
 import { jwtConfig } from '@/infrastructure/config/env';
+import { isTokenBlacklisted, blacklistToken } from '@/infrastructure/cache/TokenBlacklist';
 import * as jwt from 'jsonwebtoken';
-import type { SignOptions } from 'jsonwebtoken';
 
 export interface RefreshTokenRequest {
   refreshToken: string;
@@ -21,59 +23,71 @@ export class RefreshTokenUseCase {
     const { refreshToken } = request;
 
     try {
+      // Check if refresh token is blacklisted
+      const isBlacklisted = await isTokenBlacklisted(refreshToken);
+      if (isBlacklisted) {
+        throw new UnauthorizedError('Refresh token has been revoked');
+      }
+
       // Verify and decode refresh token
-      const payload = jwt.verify(refreshToken, jwtConfig.secret) as any;
+      const decoded = jwt.verify(refreshToken, jwtConfig.secret);
+      const payload = decoded as JWTTokenPayload;
 
       // Validate it's a refresh token
-      if (payload.type !== 'refresh') {
-        throw new Error('Invalid refresh token');
+      if (!isRefreshToken(payload)) {
+        throw new UnauthorizedError('Invalid token type');
       }
 
       // Validate token issuer
       if (payload.iss !== jwtConfig.issuer) {
-        throw new Error('Invalid token issuer');
+        throw new UnauthorizedError('Invalid token issuer');
       }
 
       // Validate token subject matches userId
       if (payload.sub !== payload.userId) {
-        throw new Error('Invalid token subject');
+        throw new UnauthorizedError('Invalid token subject');
       }
 
       // Find user
       const user = await this.userRepository.findById(payload.userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new UnauthorizedError('User not found');
       }
 
       // Check if user is still active
       if (!user.isActive) {
-        throw new Error('User account is inactive');
+        throw new UnauthorizedError('User account is inactive');
       }
 
       // Generate new tokens
-      const tokenPayload = {
+      const accessTokenPayload: JWTAccessTokenPayload = {
         userId: user.id,
         email: user.email,
         username: user.username,
+        type: 'access',
       };
 
       // New access token
-      const newToken = jwt.sign(tokenPayload, jwtConfig.secret, {
-        expiresIn: jwtConfig.accessTokenExpiresIn as any,
+      const newToken = jwt.sign(accessTokenPayload, jwtConfig.secret, {
+        expiresIn: jwtConfig.accessTokenExpiresIn,
         issuer: jwtConfig.issuer,
         subject: user.id,
       });
 
       // New refresh token
-      const newRefreshToken = jwt.sign(
-        { userId: user.id, type: 'refresh' },
-        jwtConfig.secret,
-        {
-          expiresIn: jwtConfig.refreshTokenExpiresIn as any,
-          issuer: jwtConfig.issuer,
-          subject: user.id,
-        }
-      );
+      const newRefreshTokenPayload: JWTRefreshTokenPayload = {
+        userId: user.id,
+        type: 'refresh',
+      };
+      
+      const newRefreshToken = jwt.sign(newRefreshTokenPayload, jwtConfig.secret, {
+        expiresIn: jwtConfig.refreshTokenExpiresIn,
+        issuer: jwtConfig.issuer,
+        subject: user.id,
+      });
+
+      // Blacklist the old refresh token (refresh token rotation)
+      await blacklistToken(refreshToken);
 
       return { 
         token: newToken, 
@@ -82,22 +96,20 @@ export class RefreshTokenUseCase {
       };
 
     } catch (error) {
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw new Error(`Invalid refresh token: ${error.message}`);
-      }
-      if (error instanceof jwt.TokenExpiredError) {
-        throw new Error('Refresh token expired');
-      }
-      if (error instanceof jwt.NotBeforeError) {
-        throw new Error('Refresh token not yet active');
-      }
-      
-      // Re-throw our custom errors with enhanced context
-      if (error instanceof Error) {
+      if (error instanceof UnauthorizedError) {
         throw error;
       }
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedError(`Invalid refresh token: ${error.message}`);
+      }
+      if (error instanceof jwt.TokenExpiredError) {
+        throw new UnauthorizedError('Refresh token expired');
+      }
+      if (error instanceof jwt.NotBeforeError) {
+        throw new UnauthorizedError('Refresh token not yet active');
+      }
       
-      throw new Error('Refresh token verification failed');
+      throw new UnauthorizedError('Refresh token verification failed');
     }
   }
 }
