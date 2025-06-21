@@ -275,6 +275,8 @@ enum ActivityType {
   DETACH
   ADD_MEMBER
   REMOVE_MEMBER
+  ADD_LABEL
+  REMOVE_LABEL
 }
 
 // エンティティタイプ
