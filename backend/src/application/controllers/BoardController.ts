@@ -2,6 +2,8 @@ import { Context } from 'hono';
 import { CreateBoardUseCase } from '@/domain/usecases/CreateBoard';
 import { GetBoardUseCase } from '@/domain/usecases/GetBoard';
 import { UpdateBoardUseCase } from '@/domain/usecases/UpdateBoard';
+import { DeleteBoardUseCase } from '@/domain/usecases/DeleteBoard';
+import { GetUserBoardsUseCase } from '@/domain/usecases/GetUserBoards';
 import { BoardValidator } from '@/application/validators/BoardValidator';
 import { BoardResponseDto, CreateBoardDto, UpdateBoardDto } from '@/interfaces/http/dto/BoardDto';
 import { Board } from '@/domain/entities/Board';
@@ -10,7 +12,9 @@ export class BoardController {
   constructor(
     private createBoardUseCase: CreateBoardUseCase,
     private getBoardUseCase: GetBoardUseCase,
-    private updateBoardUseCase: UpdateBoardUseCase
+    private updateBoardUseCase: UpdateBoardUseCase,
+    private deleteBoardUseCase: DeleteBoardUseCase,
+    private getUserBoardsUseCase: GetUserBoardsUseCase
   ) {}
 
   async createBoard(c: Context) {
@@ -143,6 +147,93 @@ export class BoardController {
         }
         if (error.message === 'Access denied') {
           return c.json({ error: 'Access denied' }, 403);
+        }
+        return c.json({ error: error.message }, 400);
+      }
+      
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  async deleteBoard(c: Context) {
+    try {
+      const boardId = c.req.param('id');
+      const userId = c.get('userId');
+      
+      if (!userId) {
+        return c.json({ error: 'Unauthorized' }, 401);
+      }
+
+      if (!boardId) {
+        return c.json({ error: 'Board ID is required' }, 400);
+      }
+
+      // Execute use case
+      await this.deleteBoardUseCase.execute({
+        boardId,
+        userId,
+      });
+
+      // Return success response
+      return c.json({ message: 'Board deleted successfully' }, 200);
+
+    } catch (error) {
+      console.error('Error deleting board:', error);
+      
+      if (error instanceof Error) {
+        if (error.message === 'Board not found') {
+          return c.json({ error: 'Board not found' }, 404);
+        }
+        if (error.message === 'Only board owners can delete boards') {
+          return c.json({ error: 'Only board owners can delete boards' }, 403);
+        }
+        return c.json({ error: error.message }, 400);
+      }
+      
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  async getUserBoards(c: Context) {
+    try {
+      const userId = c.get('userId');
+      
+      if (!userId) {
+        return c.json({ error: 'Unauthorized' }, 401);
+      }
+
+      // Get query parameters
+      const includeArchived = c.req.query('includeArchived') === 'true';
+      const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : undefined;
+      const offset = c.req.query('offset') ? parseInt(c.req.query('offset')!) : undefined;
+
+      // Execute use case
+      const result = await this.getUserBoardsUseCase.execute({
+        userId,
+        includeArchived,
+        limit,
+        offset,
+      });
+
+      // Map response - for member boards, we don't know the exact role without additional queries
+      // so we'll use 'MEMBER' as a default for now
+      const response = {
+        ownedBoards: result.ownedBoards.map(board => this.mapBoardToResponse(board, 'OWNER')),
+        memberBoards: result.memberBoards.map(board => this.mapBoardToResponse(board, 'MEMBER')),
+        totalCount: result.totalCount,
+      };
+
+      return c.json(response);
+
+    } catch (error) {
+      console.error('Error getting user boards:', error);
+      
+      if (error instanceof Error) {
+        if (error.message === 'User not found') {
+          return c.json({ error: 'User not found' }, 404);
+        }
+        if (error.message === 'User account is inactive') {
+          return c.json({ error: 'Account is inactive' }, 403);
         }
         return c.json({ error: error.message }, 400);
       }
