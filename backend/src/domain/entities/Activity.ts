@@ -1,4 +1,4 @@
-export type ActivityType = 'CREATE' | 'UPDATE' | 'DELETE' | 'MOVE' | 'ARCHIVE' | 'UNARCHIVE' | 'ASSIGN' | 'UNASSIGN' | 'COMMENT' | 'ATTACH' | 'DETACH' | 'ADD_MEMBER' | 'REMOVE_MEMBER';
+export type ActivityType = 'CREATE' | 'UPDATE' | 'DELETE' | 'MOVE' | 'ARCHIVE' | 'UNARCHIVE' | 'ASSIGN' | 'UNASSIGN' | 'COMMENT' | 'ATTACH' | 'DETACH' | 'ADD_MEMBER' | 'REMOVE_MEMBER' | 'ADD_LABEL' | 'REMOVE_LABEL';
 export type EntityType = 'BOARD' | 'LIST' | 'CARD' | 'COMMENT' | 'ATTACHMENT' | 'CHECKLIST' | 'LABEL';
 
 export interface ActivityProps {
