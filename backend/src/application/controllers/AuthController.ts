@@ -3,6 +3,8 @@ import { RegisterUserUseCase } from '@/domain/usecases/RegisterUser';
 import { LoginUserUseCase } from '@/domain/usecases/LoginUser';
 import { GetUserProfileUseCase } from '@/domain/usecases/GetUserProfile';
 import { RefreshTokenUseCase } from '@/domain/usecases/RefreshToken';
+import { UpdateUserProfileUseCase } from '@/domain/usecases/UpdateUserProfile';
+import { ChangePasswordUseCase } from '@/domain/usecases/ChangePassword';
 import { AuthValidator } from '@/application/validators/AuthValidator';
 import { UserResponseDto } from '@/interfaces/http/dto/UserDto';
 import { User } from '@/domain/entities/User';
@@ -12,7 +14,9 @@ export class AuthController {
     private registerUserUseCase: RegisterUserUseCase,
     private loginUserUseCase: LoginUserUseCase,
     private getUserProfileUseCase: GetUserProfileUseCase,
-    private refreshTokenUseCase: RefreshTokenUseCase
+    private refreshTokenUseCase: RefreshTokenUseCase,
+    private updateUserProfileUseCase: UpdateUserProfileUseCase,
+    private changePasswordUseCase: ChangePasswordUseCase
   ) {}
 
   async register(c: Context) {
@@ -172,6 +176,104 @@ export class AuthController {
     // For JWT tokens, logout is handled client-side by removing the token
     // In a more sophisticated implementation, you might maintain a blacklist
     return c.json({ message: 'Logged out successfully' });
+  }
+
+  async updateProfile(c: Context) {
+    try {
+      // Get userId from auth middleware
+      const userId = c.get('userId');
+      if (!userId) {
+        return c.json({ error: 'Authentication required' }, 401);
+      }
+
+      // Parse and validate request body
+      const body = await c.req.json();
+      const validation = AuthValidator.validateUpdateProfile(body);
+      
+      if (!validation.success) {
+        return c.json({ 
+          error: 'Validation failed', 
+          details: validation.errors 
+        }, 400);
+      }
+
+      // Execute use case
+      const result = await this.updateUserProfileUseCase.execute({
+        userId,
+        ...validation.data!,
+      });
+
+      // Return response
+      const response: UserResponseDto = this.mapUserToResponse(result.user);
+      return c.json(response);
+
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      
+      if (error instanceof Error) {
+        if (error.message === 'User not found') {
+          return c.json({ error: 'User not found' }, 404);
+        }
+        if (error.message === 'Cannot update profile for inactive user') {
+          return c.json({ error: 'Account is inactive' }, 403);
+        }
+      }
+      
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  async changePassword(c: Context) {
+    try {
+      // Get userId from auth middleware
+      const userId = c.get('userId');
+      if (!userId) {
+        return c.json({ error: 'Authentication required' }, 401);
+      }
+
+      // Parse and validate request body
+      const body = await c.req.json();
+      const validation = AuthValidator.validateChangePassword(body);
+      
+      if (!validation.success) {
+        return c.json({ 
+          error: 'Validation failed', 
+          details: validation.errors 
+        }, 400);
+      }
+
+      // Execute use case
+      const result = await this.changePasswordUseCase.execute({
+        userId,
+        ...validation.data!,
+      });
+
+      // Return response
+      return c.json({ 
+        success: result.success,
+        message: result.message 
+      });
+
+    } catch (error) {
+      console.error('Error changing password:', error);
+      
+      if (error instanceof Error) {
+        if (error.message === 'User not found') {
+          return c.json({ error: 'User not found' }, 404);
+        }
+        if (error.message === 'Cannot change password for inactive user') {
+          return c.json({ error: 'Account is inactive' }, 403);
+        }
+        if (error.message === 'Current password is incorrect') {
+          return c.json({ error: 'Current password is incorrect' }, 400);
+        }
+        if (error.message.includes('password')) {
+          return c.json({ error: error.message }, 400);
+        }
+      }
+      
+      return c.json({ error: 'Internal server error' }, 500);
+    }
   }
 
   private mapUserToResponse(user: User): UserResponseDto {

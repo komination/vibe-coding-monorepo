@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { AuthController } from '@/application/controllers/index';
+import { AuthController } from '@/application/controllers/AuthController';
 
 export function createAuthRoutes(authController: AuthController) {
   const app = new Hono();
@@ -27,6 +27,16 @@ export function createAuthRoutes(authController: AuthController) {
   // GET /api/auth/me - Get current user profile (requires authentication)
   app.get('/me', async (c) => {
     return authController.getProfile(c);
+  });
+
+  // PUT /api/auth/profile - Update user profile (requires authentication)
+  app.put('/profile', async (c) => {
+    return authController.updateProfile(c);
+  });
+
+  // PUT /api/auth/password - Change user password (requires authentication)
+  app.put('/password', async (c) => {
+    return authController.changePassword(c);
   });
 
   return app;
