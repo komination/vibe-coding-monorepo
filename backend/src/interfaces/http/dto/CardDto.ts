@@ -13,6 +13,7 @@ export interface UpdateCardDto {
   dueDate?: string;
   startDate?: string;
   coverUrl?: string;
+  isArchived?: boolean;
 }
 
 export interface MoveCardDto {
