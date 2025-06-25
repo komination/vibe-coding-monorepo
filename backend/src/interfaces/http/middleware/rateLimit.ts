@@ -124,86 +124,10 @@ export function createRateLimitMiddleware(config: RateLimitConfig) {
   };
 }
 
-// Specific middleware for login attempts with user-based limiting
-export function createLoginRateLimitMiddleware() {
-  const store = new Map<string, { attempts: number; lockedUntil?: number }>();
-  
-  return async function loginRateLimitMiddleware(c: Context, next: Next) {
-    const body = await c.req.json().catch(() => ({}));
-    const identifier = body.identifier || body.email || body.username;
-    
-    if (!identifier) {
-      await next();
-      return;
-    }
-    
-    const key = `login:${identifier.toLowerCase()}`;
-    const now = Date.now();
-    const record = store.get(key) || { attempts: 0 };
-    
-    // Check if account is locked
-    if (record.lockedUntil && record.lockedUntil > now) {
-      const remainingSeconds = Math.ceil((record.lockedUntil - now) / 1000);
-      c.header('Retry-After', remainingSeconds.toString());
-      throw new TooManyRequestsError(
-        `Account locked due to too many failed login attempts. Try again in ${remainingSeconds} seconds.`,
-        remainingSeconds
-      );
-    }
-    
-    try {
-      await next();
-      
-      // Reset attempts on successful login
-      if (c.res.status === 200) {
-        store.delete(key);
-      } else if (c.res.status === 401) {
-        // Increment failed attempts
-        record.attempts++;
-        
-        if (record.attempts >= appConfig.maxLoginAttempts) {
-          // Lock account
-          record.lockedUntil = now + (appConfig.loginLockoutDuration * 60 * 1000);
-          store.set(key, record);
-          
-          const lockDurationMinutes = appConfig.loginLockoutDuration;
-          throw new TooManyRequestsError(
-            `Account locked for ${lockDurationMinutes} minutes due to ${appConfig.maxLoginAttempts} failed login attempts.`,
-            lockDurationMinutes * 60
-          );
-        } else {
-          store.set(key, record);
-          // Add remaining attempts to response
-          c.header('X-Login-Attempts-Remaining', (appConfig.maxLoginAttempts - record.attempts).toString());
-        }
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
-}
 
 // Pre-configured rate limiters for common endpoints
-export const authRateLimiter = createRateLimitMiddleware({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
-  message: 'Too many authentication requests from this IP, please try again later.',
-});
-
-export const registrationRateLimiter = createRateLimitMiddleware({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3,
-  message: 'Too many registration attempts from this IP, please try again later.',
-});
-
 export const apiRateLimiter = createRateLimitMiddleware({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: 'Too many API requests from this IP, please try again later.',
-});
-
-export const refreshTokenRateLimiter = createRateLimitMiddleware({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10,
-  message: 'Too many token refresh requests from this IP, please try again later.',
 });

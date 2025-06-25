@@ -1,8 +1,8 @@
 import { Context, Next } from 'hono';
-import { VerifyTokenUseCase } from '@/domain/usecases/VerifyToken';
+import { VerifyCognitoTokenUseCase } from '@/domain/usecases/VerifyCognitoToken';
 
 // Factory function to create auth middleware with injected dependencies
-export function createAuthMiddleware(verifyTokenUseCase: VerifyTokenUseCase) {
+export function createAuthMiddleware(verifyCognitoTokenUseCase: VerifyCognitoTokenUseCase) {
   return async function authMiddleware(c: Context, next: Next) {
     const authHeader = c.req.header('Authorization');
     
@@ -12,7 +12,7 @@ export function createAuthMiddleware(verifyTokenUseCase: VerifyTokenUseCase) {
 
     try {
       const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-      const result = await verifyTokenUseCase.execute({ token });
+      const result = await verifyCognitoTokenUseCase.execute({ token });
       
       // Set user information in context
       c.set('userId', result.user.id);
@@ -38,14 +38,14 @@ export function createAuthMiddleware(verifyTokenUseCase: VerifyTokenUseCase) {
 }
 
 // Factory function to create optional auth middleware
-export function createOptionalAuthMiddleware(verifyTokenUseCase: VerifyTokenUseCase) {
+export function createOptionalAuthMiddleware(verifyCognitoTokenUseCase: VerifyCognitoTokenUseCase) {
   return async function optionalAuthMiddleware(c: Context, next: Next) {
     const authHeader = c.req.header('Authorization');
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
         const token = authHeader.substring(7);
-        const result = await verifyTokenUseCase.execute({ token });
+        const result = await verifyCognitoTokenUseCase.execute({ token });
         
         // Set user information in context
         c.set('userId', result.user.id);

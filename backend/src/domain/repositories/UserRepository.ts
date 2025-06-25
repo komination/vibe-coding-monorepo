@@ -4,6 +4,9 @@ export interface UserRepository {
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   findByUsername(username: string): Promise<User | null>;
+  findByCognitoSub(cognitoSub: string): Promise<User | null>;
+  create(user: User): Promise<User>;
+  update(user: User): Promise<User>;
   save(user: User): Promise<void>;
   delete(id: string): Promise<void>;
   findMany(filters?: {

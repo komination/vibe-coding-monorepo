@@ -15,7 +15,7 @@ model User {
   id             String         @id @default(cuid())
   email          String         @unique
   username       String         @unique
-  passwordHash   String
+  cognitoSub     String         @unique // Cognito user ID (required for Cognito-only auth)
   name           String?
   avatarUrl      String?
   isActive       Boolean        @default(true)
@@ -33,6 +33,7 @@ model User {
 
   @@index([email])
   @@index([username])
+  @@index([cognitoSub])
 }
 
 // ボードモデル
@@ -289,3 +290,4 @@ enum EntityType {
   CHECKLIST
   LABEL
 }
+

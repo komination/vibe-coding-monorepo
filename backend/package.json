@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target node --external bcrypt",
+    "build": "bun build src/index.ts --outdir dist --target node",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
     "db:migrate": "prisma migrate dev",
@@ -15,17 +15,16 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.835.0",
+    "@aws-sdk/credential-providers": "^3.835.0",
     "@hono/node-server": "^1.14.4",
-    "bcrypt": "^5.1.1",
     "dotenv": "^16.5.0",
     "hono": "^4.7.11",
-    "jsonwebtoken": "^9.0.2",
+    "jose": "^6.0.11",
     "zod": "^3.25.67"
   },
   "devDependencies": {
     "@prisma/client": "^6.10.0",
-    "@types/bcrypt": "^5.0.2",
-    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20.11.17",
     "bun-types": "^1.2.16",
     "prisma": "^6.10.0",

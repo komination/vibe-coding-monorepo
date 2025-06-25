@@ -2,9 +2,9 @@ export interface UserProps {
   id: string;
   email: string;
   username: string;
-  passwordHash: string;
+  cognitoSub: string;
   name?: string;
-  avatarUrl?: string;
+  avatarUrl?: string;  
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -18,6 +18,27 @@ export class User {
     return new User({
       ...props,
       id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  static createCognitoUser(props: {
+    email: string;
+    username: string;
+    cognitoSub: string;
+    name?: string;
+    avatarUrl?: string;
+  }): User {
+    const now = new Date();
+    return new User({
+      id: crypto.randomUUID(),
+      email: props.email,
+      username: props.username,
+      cognitoSub: props.cognitoSub,
+      name: props.name,
+      avatarUrl: props.avatarUrl,
+      isActive: true,
       createdAt: now,
       updatedAt: now,
     });
@@ -39,8 +60,8 @@ export class User {
     return this.props.username;
   }
 
-  get passwordHash(): string {
-    return this.props.passwordHash;
+  get cognitoSub(): string {
+    return this.props.cognitoSub;
   }
 
   get name(): string | undefined {
@@ -79,9 +100,13 @@ export class User {
     this.props.updatedAt = new Date();
   }
 
-  changePassword(newPasswordHash: string): void {
-    this.props.passwordHash = newPasswordHash;
-    this.props.updatedAt = new Date();
+  updateCognito(cognitoSub: string): User {
+    const now = new Date();
+    return new User({
+      ...this.props,
+      cognitoSub,
+      updatedAt: now,
+    });
   }
 
   toJSON(): UserProps {

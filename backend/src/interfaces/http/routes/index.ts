@@ -17,7 +17,10 @@ export function createApiRoutes(prisma: PrismaClient) {
   const container = createContainer(prisma);
   
   // Create auth middleware with injected dependencies
-  const authMiddleware = createAuthMiddleware(container.verifyTokenUseCase);
+  // Use Cognito-only authentication
+  const authMiddleware = createAuthMiddleware(
+    container.verifyCognitoTokenUseCase
+  );
   
   // Register routes
   
@@ -33,7 +36,6 @@ export function createApiRoutes(prisma: PrismaClient) {
   // Protected auth routes (user profile management)
   app.use('/auth/me', authMiddleware);
   app.use('/auth/profile', authMiddleware);
-  app.use('/auth/password', authMiddleware);
   
   app.route('/boards', createBoardRoutes(container.boardController, container.listController));
   app.route('/cards', createCardRoutes(container.cardController));

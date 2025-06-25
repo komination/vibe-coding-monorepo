@@ -5,6 +5,22 @@ import { UserRepository } from '@/domain/repositories/UserRepository';
 export class PrismaUserRepository implements UserRepository {
   constructor(private prisma: PrismaClient) {}
 
+  private mapToUser(userData: any): User {
+    return User.fromPersistence({
+      id: userData.id,
+      email: userData.email,
+      username: userData.username,
+      passwordHash: userData.passwordHash,
+      cognitoSub: userData.cognitoSub,
+      authProvider: userData.authProvider,
+      name: userData.name || undefined,
+      avatarUrl: userData.avatarUrl || undefined,
+      isActive: userData.isActive,
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
+    });
+  }
+
   async findById(id: string): Promise<User | null> {
     const userData = await this.prisma.user.findUnique({
       where: { id },
@@ -12,17 +28,7 @@ export class PrismaUserRepository implements UserRepository {
 
     if (!userData) return null;
 
-    return User.fromPersistence({
-      id: userData.id,
-      email: userData.email,
-      username: userData.username,
-      passwordHash: userData.passwordHash,
-      name: userData.name || undefined,
-      avatarUrl: userData.avatarUrl || undefined,
-      isActive: userData.isActive,
-      createdAt: userData.createdAt,
-      updatedAt: userData.updatedAt,
-    });
+    return this.mapToUser(userData);
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -32,17 +38,7 @@ export class PrismaUserRepository implements UserRepository {
 
     if (!userData) return null;
 
-    return User.fromPersistence({
-      id: userData.id,
-      email: userData.email,
-      username: userData.username,
-      passwordHash: userData.passwordHash,
-      name: userData.name || undefined,
-      avatarUrl: userData.avatarUrl || undefined,
-      isActive: userData.isActive,
-      createdAt: userData.createdAt,
-      updatedAt: userData.updatedAt,
-    });
+    return this.mapToUser(userData);
   }
 
   async findByUsername(username: string): Promise<User | null> {
@@ -52,17 +48,60 @@ export class PrismaUserRepository implements UserRepository {
 
     if (!userData) return null;
 
-    return User.fromPersistence({
-      id: userData.id,
-      email: userData.email,
-      username: userData.username,
-      passwordHash: userData.passwordHash,
-      name: userData.name || undefined,
-      avatarUrl: userData.avatarUrl || undefined,
-      isActive: userData.isActive,
-      createdAt: userData.createdAt,
-      updatedAt: userData.updatedAt,
+    return this.mapToUser(userData);
+  }
+
+  async findByCognitoSub(cognitoSub: string): Promise<User | null> {
+    const userData = await this.prisma.user.findUnique({
+      where: { cognitoSub },
     });
+
+    if (!userData) return null;
+
+    return this.mapToUser(userData);
+  }
+
+  async create(user: User): Promise<User> {
+    const userData = user.toJSON();
+
+    const created = await this.prisma.user.create({
+      data: {
+        id: userData.id,
+        email: userData.email,
+        username: userData.username,
+        passwordHash: userData.passwordHash,
+        cognitoSub: userData.cognitoSub,
+        authProvider: userData.authProvider,
+        name: userData.name,
+        avatarUrl: userData.avatarUrl,
+        isActive: userData.isActive,
+        createdAt: userData.createdAt,
+        updatedAt: userData.updatedAt,
+      },
+    });
+
+    return this.mapToUser(created);
+  }
+
+  async update(user: User): Promise<User> {
+    const userData = user.toJSON();
+
+    const updated = await this.prisma.user.update({
+      where: { id: userData.id },
+      data: {
+        email: userData.email,
+        username: userData.username,
+        passwordHash: userData.passwordHash,
+        cognitoSub: userData.cognitoSub,
+        authProvider: userData.authProvider,
+        name: userData.name,
+        avatarUrl: userData.avatarUrl,
+        isActive: userData.isActive,
+        updatedAt: userData.updatedAt,
+      },
+    });
+
+    return this.mapToUser(updated);
   }
 
   async save(user: User): Promise<void> {
@@ -75,6 +114,8 @@ export class PrismaUserRepository implements UserRepository {
         email: userData.email,
         username: userData.username,
         passwordHash: userData.passwordHash,
+        cognitoSub: userData.cognitoSub,
+        authProvider: userData.authProvider,
         name: userData.name,
         avatarUrl: userData.avatarUrl,
         isActive: userData.isActive,
@@ -85,6 +126,8 @@ export class PrismaUserRepository implements UserRepository {
         email: userData.email,
         username: userData.username,
         passwordHash: userData.passwordHash,
+        cognitoSub: userData.cognitoSub,
+        authProvider: userData.authProvider,
         name: userData.name,
         avatarUrl: userData.avatarUrl,
         isActive: userData.isActive,
@@ -117,17 +160,7 @@ export class PrismaUserRepository implements UserRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return usersData.map(userData => User.fromPersistence({
-      id: userData.id,
-      email: userData.email,
-      username: userData.username,
-      passwordHash: userData.passwordHash,
-      name: userData.name || undefined,
-      avatarUrl: userData.avatarUrl || undefined,
-      isActive: userData.isActive,
-      createdAt: userData.createdAt,
-      updatedAt: userData.updatedAt,
-    }));
+    return usersData.map(userData => this.mapToUser(userData));
   }
 
   async existsByEmail(email: string): Promise<boolean> {

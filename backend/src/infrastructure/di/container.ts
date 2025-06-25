@@ -15,13 +15,11 @@ import { PrismaLabelRepository } from '@/infrastructure/repositories/PrismaLabel
 import { PrismaActivityRepository } from '@/infrastructure/repositories/PrismaActivityRepository';
 
 // Import use cases
-import { RegisterUserUseCase } from '@/domain/usecases/RegisterUser';
-import { LoginUserUseCase } from '@/domain/usecases/LoginUser';
-import { VerifyTokenUseCase } from '@/domain/usecases/VerifyToken';
+import { VerifyCognitoTokenUseCase } from '@/domain/usecases/VerifyCognitoToken';
+import { SyncCognitoUserUseCase } from '@/domain/usecases/SyncCognitoUser';
 import { GetUserProfileUseCase } from '@/domain/usecases/GetUserProfile';
-import { RefreshTokenUseCase } from '@/domain/usecases/RefreshToken';
 import { UpdateUserProfileUseCase } from '@/domain/usecases/UpdateUserProfile';
-import { ChangePasswordUseCase } from '@/domain/usecases/ChangePassword';
+import { LogoutUserUseCase } from '@/domain/usecases/LogoutUser';
 import { CreateBoardUseCase } from '@/domain/usecases/CreateBoard';
 import { GetBoardUseCase } from '@/domain/usecases/GetBoard';
 import { UpdateBoardUseCase } from '@/domain/usecases/UpdateBoard';
@@ -73,13 +71,11 @@ export interface Container {
   activityRepository: ActivityRepository;
   
   // Auth Use Cases
-  registerUserUseCase: RegisterUserUseCase;
-  loginUserUseCase: LoginUserUseCase;
-  verifyTokenUseCase: VerifyTokenUseCase;
+  logoutUserUseCase: LogoutUserUseCase;
+  verifyCognitoTokenUseCase: VerifyCognitoTokenUseCase;
+  syncCognitoUserUseCase: SyncCognitoUserUseCase;
   getUserProfileUseCase: GetUserProfileUseCase;
-  refreshTokenUseCase: RefreshTokenUseCase;
   updateUserProfileUseCase: UpdateUserProfileUseCase;
-  changePasswordUseCase: ChangePasswordUseCase;
   
   // Board Use Cases
   createBoardUseCase: CreateBoardUseCase;
@@ -137,13 +133,11 @@ export function createContainer(prisma: PrismaClient): Container {
   const activityRepository = new PrismaActivityRepository(prisma);
   
   // Create auth use cases
-  const registerUserUseCase = new RegisterUserUseCase(userRepository);
-  const loginUserUseCase = new LoginUserUseCase(userRepository);
-  const verifyTokenUseCase = new VerifyTokenUseCase(userRepository);
+  const logoutUserUseCase = new LogoutUserUseCase();
+  const verifyCognitoTokenUseCase = new VerifyCognitoTokenUseCase(userRepository);
+  const syncCognitoUserUseCase = new SyncCognitoUserUseCase(userRepository);
   const getUserProfileUseCase = new GetUserProfileUseCase(userRepository);
-  const refreshTokenUseCase = new RefreshTokenUseCase(userRepository);
   const updateUserProfileUseCase = new UpdateUserProfileUseCase(userRepository);
-  const changePasswordUseCase = new ChangePasswordUseCase(userRepository);
   
   // Create board use cases
   const createBoardUseCase = new CreateBoardUseCase(
@@ -316,12 +310,9 @@ export function createContainer(prisma: PrismaClient): Container {
   
   // Create controllers
   const authController = new AuthController(
-    registerUserUseCase,
-    loginUserUseCase,
+    logoutUserUseCase,
     getUserProfileUseCase,
-    refreshTokenUseCase,
-    updateUserProfileUseCase,
-    changePasswordUseCase
+    updateUserProfileUseCase
   );
   const boardController = new BoardController(
     createBoardUseCase,
@@ -375,13 +366,11 @@ export function createContainer(prisma: PrismaClient): Container {
     activityRepository,
     
     // Auth Use Cases
-    registerUserUseCase,
-    loginUserUseCase,
-    verifyTokenUseCase,
+    logoutUserUseCase,
+    verifyCognitoTokenUseCase,
+    syncCognitoUserUseCase,
     getUserProfileUseCase,
-    refreshTokenUseCase,
     updateUserProfileUseCase,
-    changePasswordUseCase,
     
     // Board Use Cases
     createBoardUseCase,

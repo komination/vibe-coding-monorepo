@@ -13,11 +13,6 @@ const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   
-  // JWT
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  JWT_ACCESS_TOKEN_EXPIRES_IN: z.string().default('1h'),
-  JWT_REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
-  
   // Application
   APP_NAME: z.string().default('Kanban App'),
   FRONTEND_URL: z.string().default('http://localhost:4001'),
@@ -30,6 +25,14 @@ const envSchema = z.object({
   // Redis (optional for token blacklist)
   REDIS_URL: z.string().optional(),
   REDIS_PASSWORD: z.string().optional(),
+  
+  // AWS Cognito
+  AWS_REGION: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  COGNITO_USER_POOL_ID: z.string().optional(),
+  COGNITO_CLIENT_ID: z.string().optional(),
+  COGNITO_CLIENT_SECRET: z.string().optional(),
 });
 
 // Type for validated environment variables
@@ -64,13 +67,6 @@ export const databaseConfig = {
   url: env.DATABASE_URL,
 } as const;
 
-export const jwtConfig = {
-  secret: env.JWT_SECRET,
-  accessTokenExpiresIn: env.JWT_ACCESS_TOKEN_EXPIRES_IN,
-  refreshTokenExpiresIn: env.JWT_REFRESH_TOKEN_EXPIRES_IN,
-  issuer: env.APP_NAME,
-} as const;
-
 export const appConfig = {
   name: env.APP_NAME,
   frontendUrl: env.FRONTEND_URL,
@@ -82,4 +78,14 @@ export const appConfig = {
 export const redisConfig = {
   url: env.REDIS_URL,
   password: env.REDIS_PASSWORD,
+} as const;
+
+export const cognitoConfig = {
+  region: env.AWS_REGION,
+  accessKeyId: env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+  userPoolId: env.COGNITO_USER_POOL_ID,
+  clientId: env.COGNITO_CLIENT_ID,
+  clientSecret: env.COGNITO_CLIENT_SECRET,
+  isConfigured: !!(env.COGNITO_USER_POOL_ID && env.COGNITO_CLIENT_ID),
 } as const;
