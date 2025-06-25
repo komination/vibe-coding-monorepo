@@ -2,7 +2,7 @@
 CREATE TYPE "BoardRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER');
 
 -- CreateEnum
-CREATE TYPE "ActivityType" AS ENUM ('CREATE', 'UPDATE', 'DELETE', 'MOVE', 'ARCHIVE', 'UNARCHIVE', 'ASSIGN', 'UNASSIGN', 'COMMENT', 'ATTACH', 'DETACH', 'ADD_MEMBER', 'REMOVE_MEMBER');
+CREATE TYPE "ActivityType" AS ENUM ('CREATE', 'UPDATE', 'DELETE', 'MOVE', 'ARCHIVE', 'UNARCHIVE', 'ASSIGN', 'UNASSIGN', 'COMMENT', 'ATTACH', 'DETACH', 'ADD_MEMBER', 'REMOVE_MEMBER', 'ADD_LABEL', 'REMOVE_LABEL');
 
 -- CreateEnum
 CREATE TYPE "EntityType" AS ENUM ('BOARD', 'LIST', 'CARD', 'COMMENT', 'ATTACHMENT', 'CHECKLIST', 'LABEL');
@@ -12,7 +12,7 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "username" TEXT NOT NULL,
-    "passwordHash" TEXT NOT NULL,
+    "cognitoSub" TEXT NOT NULL,
     "name" TEXT,
     "avatarUrl" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
@@ -175,10 +175,16 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_cognitoSub_key" ON "User"("cognitoSub");
+
+-- CreateIndex
 CREATE INDEX "User_email_idx" ON "User"("email");
 
 -- CreateIndex
 CREATE INDEX "User_username_idx" ON "User"("username");
+
+-- CreateIndex
+CREATE INDEX "User_cognitoSub_idx" ON "User"("cognitoSub");
 
 -- CreateIndex
 CREATE INDEX "Board_ownerId_idx" ON "Board"("ownerId");
@@ -323,3 +329,4 @@ ALTER TABLE "Activity" ADD CONSTRAINT "Activity_boardId_fkey" FOREIGN KEY ("boar
 
 -- AddForeignKey
 ALTER TABLE "Activity" ADD CONSTRAINT "Activity_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "Card"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
