@@ -25,7 +25,7 @@ export async function mockAuthMiddleware(c: Context, next: Next) {
   } else {
     // Allow custom user tokens for testing different scenarios
     user = await prismaTest.user.findFirst({
-      where: { cognitoId: token },
+      where: { cognitoSub: token },
     });
   }
 
@@ -43,6 +43,6 @@ export async function mockAuthMiddleware(c: Context, next: Next) {
 /**
  * Create a mock auth token for a specific user
  */
-export function createMockAuthToken(cognitoId: string): string {
-  return `Bearer ${cognitoId}`;
+export function createMockAuthToken(cognitoSub: string): string {
+  return `Bearer ${cognitoSub}`;
 }

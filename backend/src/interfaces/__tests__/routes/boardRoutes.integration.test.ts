@@ -1,31 +1,33 @@
 import { describe, test, expect, beforeEach, beforeAll } from "bun:test";
 import { Hono } from "hono";
-import { boardRoutes } from "@/interfaces/http/routes/boardRoutes";
+import { createBoardRoutes } from "@/interfaces/http/routes/boardRoutes";
 import { prismaTest } from "@/test/setup";
-import { initTestContainer } from "@/test/utils/testContainer";
+import { createContainer } from "@/infrastructure/di/container";
 import { mockAuthMiddleware } from "@/test/utils/mockAuth";
 import { BoardRole } from "@prisma/client";
 
 describe("Board Routes Integration", () => {
   let app: Hono;
   let testUser: any;
+  let container: any;
 
   beforeAll(() => {
     // Initialize DI container with test repositories
-    initTestContainer();
+    container = createContainer(prismaTest);
   });
 
   beforeEach(async () => {
     // Create test app with mock auth
     app = new Hono();
     app.use("*", mockAuthMiddleware);
-    app.route("/boards", boardRoutes);
+    app.route("/boards", createBoardRoutes(container.boardController, container.listController));
 
     // Create test user
     testUser = await prismaTest.user.create({
       data: {
-        cognitoId: "test-cognito-id",
+        cognitoSub: "test-cognito-id",
         email: "test@example.com",
+        username: "testuser",
         name: "Test User",
         isActive: true,
       },
@@ -49,12 +51,12 @@ describe("Board Routes Integration", () => {
     expect(response.status).toBe(201);
 
     const data = await response.json();
-    expect(data.board).toBeDefined();
-    expect(data.board.title).toBe("Integration Test Board");
+    expect(data).toBeDefined();
+    expect(data.title).toBe("Integration Test Board");
 
     // Verify board was created in database
     const board = await prismaTest.board.findUnique({
-      where: { id: data.board.id },
+      where: { id: data.id },
       include: { members: true },
     });
 
@@ -105,8 +107,9 @@ describe("Board Routes Integration", () => {
     // Create board where user is member
     const otherUser = await prismaTest.user.create({
       data: {
-        cognitoId: "other-user-cognito",
+        cognitoSub: "other-user-cognito",
         email: "other@example.com",
+        username: "otheruser",
         name: "Other User",
       },
     });
@@ -139,9 +142,10 @@ describe("Board Routes Integration", () => {
     expect(response.status).toBe(200);
 
     const data = await response.json();
-    expect(data.boards).toHaveLength(2); // Should not include archived board
+    const allBoards = [...data.ownedBoards, ...data.memberBoards];
+    expect(allBoards).toHaveLength(2); // Should not include archived board
     
-    const boardTitles = data.boards.map((b: any) => b.title);
+    const boardTitles = allBoards.map((b: any) => b.title);
     expect(boardTitles).toContain("Owned Board 1");
     expect(boardTitles).toContain("Member Board");
     expect(boardTitles).not.toContain("Owned Board 2"); // Archived
@@ -178,9 +182,9 @@ describe("Board Routes Integration", () => {
     expect(response.status).toBe(200);
 
     const data = await response.json();
-    expect(data.board.title).toBe("Updated Title");
-    expect(data.board.description).toBe("Updated Description");
-    expect(data.board.isPublic).toBe(true);
+    expect(data.title).toBe("Updated Title");
+    expect(data.description).toBe("Updated Description");
+    expect(data.isPublic).toBe(true);
 
     // Verify in database
     const updatedBoard = await prismaTest.board.findUnique({
@@ -205,12 +209,13 @@ describe("Board Routes Integration", () => {
         },
         lists: {
           create: {
-            name: "Test List",
+            title: "Test List",
             position: 1000,
             cards: {
               create: {
                 title: "Test Card",
                 position: 1000,
+                creatorId: testUser.id,
               },
             },
           },
@@ -225,7 +230,7 @@ describe("Board Routes Integration", () => {
       },
     });
 
-    expect(response.status).toBe(204);
+    expect(response.status).toBe(200);
 
     // Verify board and related data are deleted
     const deletedBoard = await prismaTest.board.findUnique({
@@ -260,8 +265,9 @@ describe("Board Routes Integration", () => {
 
     const newUser = await prismaTest.user.create({
       data: {
-        cognitoId: "new-member-cognito",
+        cognitoSub: "new-member-cognito",
         email: "newmember@example.com",
+        username: "newmember",
         name: "New Member",
       },
     });

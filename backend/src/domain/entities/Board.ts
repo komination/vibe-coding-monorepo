@@ -110,7 +110,7 @@ export class Board {
 
   canBeEditedBy(userId: string, role: BoardRole): boolean {
     if (this.isOwner(userId)) return true;
-    return role === 'ADMIN' || role === 'MEMBER';
+    return role === 'ADMIN';
   }
 
   canBeViewedBy(userId: string, role?: BoardRole): boolean {

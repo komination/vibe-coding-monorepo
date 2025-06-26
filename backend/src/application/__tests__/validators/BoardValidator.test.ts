@@ -62,7 +62,7 @@ describe("BoardValidator", () => {
       expect(result.errors).toContainEqual(
         expect.objectContaining({
           field: "title",
-          message: "title must be at least 1 characters",
+          message: "title is required",
         })
       );
     });

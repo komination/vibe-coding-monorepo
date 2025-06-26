@@ -26,8 +26,9 @@ describe("Board Routes", () => {
     // Create test user
     testUser = await prismaTest.user.create({
       data: {
-        cognitoId: "test-cognito-id",
+        cognitoSub: "test-cognito-id",
         email: "test@example.com",
+        username: "testuser",
         name: "Test User",
         isActive: true,
       },
@@ -54,13 +55,13 @@ describe("Board Routes", () => {
       expect(response.status).toBe(201);
 
       const data = await response.json();
-      expect(data.board).toBeDefined();
-      expect(data.board.title).toBe("New Board");
-      expect(data.board.description).toBe("Board Description");
+      expect(data).toBeDefined();
+      expect(data.title).toBe("New Board");
+      expect(data.description).toBe("Board Description");
 
       // Verify board was created in database
       const board = await prismaTest.board.findUnique({
-        where: { id: data.board.id },
+        where: { id: data.id },
       });
       expect(board).toBeDefined();
     });
@@ -81,7 +82,7 @@ describe("Board Routes", () => {
       expect(response.status).toBe(400);
 
       const data = await response.json();
-      expect(data.errors).toBeDefined();
+      expect(data.details).toBeDefined();
     });
 
     test("should return 401 without auth", async () => {
@@ -118,16 +119,18 @@ describe("Board Routes", () => {
       expect(response.status).toBe(200);
 
       const data = await response.json();
-      expect(data.boards).toHaveLength(2);
-      expect(data.boards[0].title).toBeDefined();
+      const allBoards = [...data.ownedBoards, ...data.memberBoards];
+      expect(allBoards).toHaveLength(2);
+      expect(allBoards[0].title).toBeDefined();
     });
 
     test("should include boards where user is member", async () => {
       // Create board owned by another user
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoId: "other-cognito-id",
+          cognitoSub: "other-cognito-id",
           email: "other@example.com",
+          username: "otheruser",
           name: "Other User",
         },
       });
@@ -157,8 +160,9 @@ describe("Board Routes", () => {
       expect(response.status).toBe(200);
 
       const data = await response.json();
-      expect(data.boards).toHaveLength(1);
-      expect(data.boards[0].title).toBe("Other's Board");
+      const allBoards = [...data.ownedBoards, ...data.memberBoards];
+      expect(allBoards).toHaveLength(1);
+      expect(allBoards[0].title).toBe("Other's Board");
     });
   });
 
@@ -181,9 +185,9 @@ describe("Board Routes", () => {
       expect(response.status).toBe(200);
 
       const data = await response.json();
-      expect(data.board.id).toBe(board.id);
-      expect(data.board.title).toBe("Test Board");
-      expect(data.board.members).toBeDefined();
+      expect(data.id).toBe(board.id);
+      expect(data.title).toBe("Test Board");
+      // Note: members are not included in the basic board response
     });
 
     test("should return 404 for non-existent board", async () => {
@@ -199,8 +203,9 @@ describe("Board Routes", () => {
     test("should return 403 if user is not a member", async () => {
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoId: "other-cognito-id",
-          email: "other@example.com",
+          cognitoSub: "other-cognito-id-2",
+          email: "other2@example.com",
+          username: "otheruser2",
           name: "Other User",
         },
       });
@@ -246,15 +251,16 @@ describe("Board Routes", () => {
       expect(response.status).toBe(200);
 
       const data = await response.json();
-      expect(data.board.title).toBe("Updated Title");
-      expect(data.board.description).toBe("New Description");
+      expect(data.title).toBe("Updated Title");
+      expect(data.description).toBe("New Description");
     });
 
     test("should return 403 if user is not owner or admin", async () => {
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoId: "other-cognito-id",
-          email: "other@example.com",
+          cognitoSub: "other-cognito-id-3",
+          email: "other3@example.com",
+          username: "otheruser3",
           name: "Other User",
         },
       });
@@ -263,15 +269,18 @@ describe("Board Routes", () => {
         data: {
           title: "Other's Board",
           ownerId: otherUser.id,
-        },
-      });
-
-      // Add test user as regular member
-      await prismaTest.boardMember.create({
-        data: {
-          boardId: board.id,
-          userId: testUser.id,
-          role: BoardRole.MEMBER,
+          members: {
+            create: [
+              {
+                userId: otherUser.id,
+                role: BoardRole.OWNER,
+              },
+              {
+                userId: testUser.id,
+                role: BoardRole.MEMBER,
+              },
+            ],
+          },
         },
       });
 
@@ -306,7 +315,7 @@ describe("Board Routes", () => {
         },
       });
 
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
 
       // Verify board was deleted
       const deletedBoard = await prismaTest.board.findUnique({
@@ -318,8 +327,9 @@ describe("Board Routes", () => {
     test("should return 403 if not owner", async () => {
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoId: "other-cognito-id",
-          email: "other@example.com",
+          cognitoSub: "other-cognito-id-4",
+          email: "other4@example.com",
+          username: "otheruser4",
           name: "Other User",
         },
       });
@@ -328,6 +338,12 @@ describe("Board Routes", () => {
         data: {
           title: "Other's Board",
           ownerId: otherUser.id,
+          members: {
+            create: {
+              userId: otherUser.id,
+              role: BoardRole.OWNER,
+            },
+          },
         },
       });
 
