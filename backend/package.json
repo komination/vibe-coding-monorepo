@@ -6,13 +6,20 @@
     "build": "bun build src/index.ts --outdir dist --target node",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "test:unit": "bun test src/domain/__tests__ src/application/__tests__",
+    "test:integration": "bun test src/infrastructure/__tests__ src/interfaces/__tests__",
     "db:migrate": "prisma migrate dev",
     "db:migrate:create": "prisma migrate dev --create-only",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:seed": "bun src/infrastructure/database/seed.ts",
     "db:reset": "prisma migrate reset",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:test:setup": "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/kanban_test\" prisma migrate deploy",
+    "db:test:reset": "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/kanban_test\" prisma migrate reset --force"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.835.0",
