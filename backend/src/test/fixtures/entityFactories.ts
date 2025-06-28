@@ -2,6 +2,8 @@ import { User } from "@/domain/entities/User";
 import { Board } from "@/domain/entities/Board";
 import { List } from "@/domain/entities/List";
 import { Card } from "@/domain/entities/Card";
+import { Label } from "@/domain/entities/Label";
+import { Activity, ActivityType, EntityType } from "@/domain/entities/Activity";
 import { DEFAULT_PROPS } from "@/test/utils/testHelpers";
 
 let idCounter = 1;
@@ -205,6 +207,124 @@ export class CardBuilder {
 
   build(): Card {
     return Card.create(this.props);
+  }
+}
+
+export class LabelBuilder {
+  private props = { ...DEFAULT_PROPS.LABEL };
+
+  static valid(): LabelBuilder {
+    return new LabelBuilder();
+  }
+
+  withName(name: string): LabelBuilder {
+    this.props.name = name;
+    return this;
+  }
+
+  withColor(color: string): LabelBuilder {
+    this.props.color = color;
+    return this;
+  }
+
+  inBoard(boardId: string): LabelBuilder {
+    this.props.boardId = boardId;
+    return this;
+  }
+
+  build(): Label {
+    return Label.create(this.props);
+  }
+}
+
+export class ActivityBuilder {
+  private props = { ...DEFAULT_PROPS.ACTIVITY };
+
+  static valid(): ActivityBuilder {
+    return new ActivityBuilder();
+  }
+
+  withAction(action: ActivityType): ActivityBuilder {
+    this.props.action = action;
+    return this;
+  }
+
+  withEntityType(entityType: EntityType): ActivityBuilder {
+    this.props.entityType = entityType;
+    return this;
+  }
+
+  withEntityId(entityId: string): ActivityBuilder {
+    this.props.entityId = entityId;
+    return this;
+  }
+
+  withEntityTitle(entityTitle: string): ActivityBuilder {
+    this.props.entityTitle = entityTitle;
+    return this;
+  }
+
+  withData(data: Record<string, any>): ActivityBuilder {
+    (this.props as any).data = data;
+    return this;
+  }
+
+  withUserId(userId: string): ActivityBuilder {
+    this.props.userId = userId;
+    return this;
+  }
+
+  inBoard(boardId: string): ActivityBuilder {
+    this.props.boardId = boardId;
+    return this;
+  }
+
+  forCard(cardId: string): ActivityBuilder {
+    (this.props as any).cardId = cardId;
+    return this;
+  }
+
+  // Convenience methods for common activity types
+  createCard(cardId: string, cardTitle: string): ActivityBuilder {
+    return this.withAction("CREATE")
+      .withEntityType("CARD")
+      .withEntityId(cardId)
+      .withEntityTitle(cardTitle)
+      .forCard(cardId);
+  }
+
+  updateCard(cardId: string, cardTitle: string): ActivityBuilder {
+    return this.withAction("UPDATE")
+      .withEntityType("CARD")
+      .withEntityId(cardId)
+      .withEntityTitle(cardTitle)
+      .forCard(cardId);
+  }
+
+  moveCard(cardId: string, cardTitle: string): ActivityBuilder {
+    return this.withAction("MOVE")
+      .withEntityType("CARD")
+      .withEntityId(cardId)
+      .withEntityTitle(cardTitle)
+      .forCard(cardId);
+  }
+
+  createBoard(boardId: string, boardTitle: string): ActivityBuilder {
+    return this.withAction("CREATE")
+      .withEntityType("BOARD")
+      .withEntityId(boardId)
+      .withEntityTitle(boardTitle);
+  }
+
+  addMember(boardId: string, boardTitle: string): ActivityBuilder {
+    return this.withAction("ADD_MEMBER")
+      .withEntityType("BOARD")
+      .withEntityId(boardId)
+      .withEntityTitle(boardTitle);
+  }
+
+  build(): Activity {
+    return Activity.create(this.props);
   }
 }
 

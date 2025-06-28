@@ -40,6 +40,19 @@ export const DEFAULT_PROPS = {
     listId: "list-123",
     creatorId: "user-123",
   },
+  LABEL: {
+    name: "Test Label",
+    color: "#0079BF",
+    boardId: "board-123",
+  },
+  ACTIVITY: {
+    action: "CREATE" as const,
+    entityType: "CARD" as const,
+    entityId: "entity-123",
+    entityTitle: "Test Entity",
+    userId: "user-123",
+    boardId: "board-123",
+  },
 };
 
 export async function cleanDatabase(prisma: PrismaClient) {
