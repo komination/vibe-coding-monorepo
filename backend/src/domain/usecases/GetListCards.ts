@@ -13,6 +13,11 @@ export class GetListCards {
   ) {}
 
   async execute(listId: string, userId: string): Promise<Card[]> {
+    // Validate input parameters
+    if (!listId || !userId) {
+      throw new Error(!listId ? "List not found" : "User not found");
+    }
+
     // Verify user exists
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -36,7 +41,7 @@ export class GetListCards {
       userId
     );
 
-    if (!board.isOwnedBy(userId) && !memberRole) {
+    if (!board.isPublic && !board.isOwnedBy(userId) && !memberRole) {
       throw new Error("You don't have permission to view cards in this list");
     }
 

@@ -16,6 +16,11 @@ export class GetCard {
   ) {}
 
   async execute(cardId: string, userId: string): Promise<Card> {
+    // Validate input parameters
+    if (!cardId || !userId) {
+      throw new Error(!cardId ? "Card not found" : "User not found");
+    }
+
     // Verify user exists
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -46,7 +51,7 @@ export class GetCard {
       userId
     );
     
-    if (!board.isOwnedBy(userId) && !memberRole) {
+    if (!board.isPublic && !board.isOwnedBy(userId) && !memberRole) {
       throw new Error("You don't have permission to view this card");
     }
 
