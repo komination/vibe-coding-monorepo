@@ -38,25 +38,25 @@ src/
 
 ```bash
 # Run all tests
-npm test
+bun test
 
 # Run tests in watch mode
-npm run test:watch
+bun run test:watch
 
 # Run with coverage report
-npm run test:coverage
+bun run test:coverage
 
 # Run only unit tests (domain + application layers)
-npm run test:unit
+bun run test:unit
 
 # Run only integration tests (infrastructure + interfaces)
-npm run test:integration
+bun run test:integration
 
 # Setup test database
-npm run db:test:setup
+bun run db:test:setup
 
 # Reset test database
-npm run db:test:reset
+bun run db:test:reset
 ```
 
 ## Test Database
@@ -72,7 +72,7 @@ The test suite uses a separate PostgreSQL database (`kanban_test`) to avoid affe
 
 2. Run migrations on test database:
    ```bash
-   npm run db:test:setup
+   bun run db:test:setup
    ```
 
 ## Writing Tests
@@ -245,7 +245,7 @@ const token = createMockAuthToken("user-cognito-id");
 After running tests with coverage, you can view the detailed report:
 
 ```bash
-npm run test:coverage
+bun run test:coverage
 ```
 
 Coverage results will be displayed in the terminal and saved to `coverage/` directory.
@@ -274,10 +274,10 @@ The test suite is designed to run in CI/CD pipelines:
 - name: Setup Database
   run: |
     createdb kanban_test
-    npm run db:test:setup
+    bun run db:test:setup
 
 - name: Run Tests
-  run: npm run test:coverage
+  run: bun run test:coverage
   env:
     DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanban_test
 ```
@@ -299,5 +299,59 @@ Use `mockDate()` helper to ensure consistent dates in tests.
 
 Regenerate Prisma client if you see type errors:
 ```bash
-npm run db:generate
+bun run db:generate
 ```
+
+## 実装済みテスト
+
+### ドメイン層
+
+#### エンティティ (104テスト実装済み)
+
+- **User** (22テスト) - 全メソッドのテスト実装済み
+  - `create`: 新規ユーザー作成、UUID生成、最小プロパティでの作成
+  - `createCognitoUser`: Cognito統合ユーザー作成、デフォルトアクティブステータス
+  - `fromPersistence`: 永続化データからの復元
+  - `updateProfile`: プロファイル更新、名前とアバターの個別更新
+  - `activate`/`deactivate`: アクティベーション状態の切り替え
+  - `updateCognito`: Cognito Sub更新（新しいインスタンス生成）
+  - `toJSON`: シリアライゼーション
+  - ビジネスルール: 空メール、無効なメール形式、長い名前、無効なURL
+
+- **Board** (26テスト) - 全メソッドのテスト実装済み
+  - `create`: 新規ボード作成、UUID生成、最小プロパティでの作成
+  - `fromPersistence`: 永続化データからの復元
+  - 更新メソッド: `updateTitle`、`updateDescription`、`updateBackground`
+  - 公開設定: `makePublic`/`makePrivate`
+  - アーカイブ: `archive`/`unarchive`
+  - 所有権: `isOwner`/`isOwnedBy`
+  - 権限チェック: `canBeEditedBy`（オーナー/アドミンのみ）、`canBeViewedBy`（公開ボード/メンバー）
+  - ビジネスルール: 空タイトル、長いタイトル/説明、無効なURL
+
+- **List** (27テスト) - 全メソッドのテスト実装済み
+  - `create`: 新規リスト作成、色指定なし、ゼロ/負のポジション
+  - `fromPersistence`: 永続化データからの復元
+  - `updateTitle`: タイトル更新、空タイトル許可
+  - `updateColor`: 色更新、色のクリア、初期色なしからの設定
+  - `updatePosition`: ポジション更新、ゼロ/負/大きな値の処理
+  - `belongsToBoard`: ボード所属確認
+  - `toJSON`: シリアライゼーション
+  - ビジネスルール: 空タイトル、長いタイトル、無効な色形式、小数ポジション
+
+- **Card** (29テスト) - 全メソッドのテスト実装済み
+  - `create`: 新規カード作成、最小プロパティでの作成
+  - `fromPersistence`: 永続化データからの復元
+  - 更新メソッド: `updateTitle`、`updateDescription`、`updatePosition`、`updateDueDate`、`updateStartDate`、`updateCover`
+  - `moveToList`: リスト間移動、同一リスト内移動
+  - `assignTo`: ユーザー割り当て、割り当て解除、再割り当て
+  - アーカイブ: `archive`/`unarchive`
+  - 関連確認: `belongsToList`、`isCreatedBy`、`isAssignedTo`
+  - `isOverdue`: 期限切れ判定（過去日付、未来日付、期限なし、現在時刻）
+  - ビジネスルール: 空タイトル、長いタイトル/説明、無効なカバーURL、負/小数ポジション、無効な日付範囲
+
+### その他実装済みのテスト
+
+- **Board Use Case** (CreateBoard.test.ts) - 基本的なユースケーステスト
+- **Board Validator** (BoardValidator.test.ts) - バリデーションロジック
+- **Board Routes** (boardRoutes.test.ts, boardRoutes.integration.test.ts) - APIエンドポイント
+- **Prisma Board Repository** (PrismaBoardRepository.test.ts) - データベース統合テスト
