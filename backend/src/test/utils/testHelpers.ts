@@ -40,7 +40,7 @@ export const DEFAULT_PROPS = {
     listId: "list-123",
     creatorId: "user-123",
   },
-} as const;
+};
 
 export async function cleanDatabase(prisma: PrismaClient) {
   const tables = [

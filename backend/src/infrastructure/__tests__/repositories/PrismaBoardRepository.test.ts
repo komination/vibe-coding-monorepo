@@ -29,6 +29,7 @@ describe("PrismaBoardRepository", () => {
         title: "Test Board",
         description: "Test Description",
         isPublic: false,
+        isArchived: false,
         ownerId: testUser.id,
       });
 
@@ -48,6 +49,8 @@ describe("PrismaBoardRepository", () => {
       // First create a board
       const board = Board.create({
         title: "Original Title",
+        isPublic: false,
+        isArchived: false,
         ownerId: testUser.id,
       });
       await repository.save(board);

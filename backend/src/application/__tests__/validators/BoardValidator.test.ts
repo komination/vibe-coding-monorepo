@@ -196,7 +196,7 @@ describe("BoardValidator", () => {
     test("should validate valid member data", () => {
       const data = {
         userId: "user-123",
-        role: "MEMBER",
+        role: "MEMBER" as const,
       };
 
       const result = BoardValidator.validateAddMember(data);
@@ -206,7 +206,7 @@ describe("BoardValidator", () => {
     });
 
     test("should accept all valid roles", () => {
-      const roles = ["ADMIN", "MEMBER", "VIEWER"];
+      const roles = ["ADMIN", "MEMBER", "VIEWER"] as const;
 
       for (const role of roles) {
         const data = {
@@ -274,7 +274,7 @@ describe("BoardValidator", () => {
   describe("validateUpdateMember", () => {
     test("should validate valid role update", () => {
       const data = {
-        role: "ADMIN",
+        role: "ADMIN" as const,
       };
 
       const result = BoardValidator.validateUpdateMember(data);

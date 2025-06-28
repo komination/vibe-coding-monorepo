@@ -49,27 +49,16 @@ export class SyncCognitoUserUseCase {
       };
     }
 
-    // Check if user exists by email (migration scenario)
+    // Check if user exists by email (should not happen in Cognito-only system)
     const existingUserByEmail = await this.userRepository.findByEmail(cognitoPayload.email);
     
-    if (existingUserByEmail && existingUserByEmail.authProvider === 'LOCAL') {
-      // Link existing local user with Cognito
-      const linkedUser = existingUserByEmail.updateCognito(cognitoPayload.sub);
-      
-      // Update profile with Cognito data if provided
-      if (cognitoPayload.name && !linkedUser.name) {
-        linkedUser.updateProfile(cognitoPayload.name, linkedUser.avatarUrl);
-      }
-      if (cognitoPayload.picture && !linkedUser.avatarUrl) {
-        linkedUser.updateProfile(linkedUser.name, cognitoPayload.picture);
-      }
-      
-      user = await this.userRepository.update(linkedUser);
-      
-      return {
-        user,
-        created: false,
-      };
+    if (existingUserByEmail) {
+      // This shouldn't happen in a Cognito-only system, but if it does,
+      // it's likely a data integrity issue
+      throw new Error(
+        `User with email ${cognitoPayload.email} already exists but with different Cognito sub. ` +
+        `This indicates a data integrity issue that needs manual resolution.`
+      );
     }
 
     // Create new Cognito user

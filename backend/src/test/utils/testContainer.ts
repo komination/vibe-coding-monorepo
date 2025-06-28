@@ -1,32 +1,12 @@
-import { container } from "@/infrastructure/di/container";
+import { createContainer, Container } from "@/infrastructure/di/container";
 import { prismaTest } from "../setup";
-import { PrismaBoardRepository } from "@/infrastructure/repositories/PrismaBoardRepository";
-import { PrismaUserRepository } from "@/infrastructure/repositories/PrismaUserRepository";
-import { PrismaListRepository } from "@/infrastructure/repositories/PrismaListRepository";
-import { PrismaCardRepository } from "@/infrastructure/repositories/PrismaCardRepository";
-import { PrismaLabelRepository } from "@/infrastructure/repositories/PrismaLabelRepository";
-import { PrismaActivityRepository } from "@/infrastructure/repositories/PrismaActivityRepository";
 
 /**
  * Initialize the DI container with test repositories
  */
-export function initTestContainer() {
-  // Clear any existing registrations
-  container.clear();
-
-  // Register repositories with test database
-  container.register("boardRepository", new PrismaBoardRepository(prismaTest));
-  container.register("userRepository", new PrismaUserRepository(prismaTest));
-  container.register("listRepository", new PrismaListRepository(prismaTest));
-  container.register("cardRepository", new PrismaCardRepository(prismaTest));
-  container.register("labelRepository", new PrismaLabelRepository(prismaTest));
-  container.register("activityRepository", new PrismaActivityRepository(prismaTest));
-
-  // Register use cases (these will use the test repositories)
-  // Note: In a real implementation, you'd register all use cases here
-  // For now, we'll add them as needed in tests
-
-  return container;
+export function initTestContainer(): Container {
+  // Create container with test database
+  return createContainer(prismaTest);
 }
 
 /**

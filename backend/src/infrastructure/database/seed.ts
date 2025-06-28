@@ -1,23 +1,18 @@
 import { PrismaClient } from '@prisma/client';
-import { hash } from 'crypto';
 
 const prisma = new PrismaClient();
-
-// Simple hash function for demo purposes (use bcrypt in production)
-function hashPassword(password: string): string {
-  return hash('sha256', password);
-}
 
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create demo users
+  // Create demo users (Cognito-authenticated)
   const user1 = await prisma.user.create({
     data: {
       email: 'demo@example.com',
       username: 'demo_user',
-      passwordHash: hashPassword('demo123'),
+      cognitoSub: 'demo-cognito-sub-123',
       name: 'Demo User',
+      isActive: true,
     },
   });
 
@@ -25,8 +20,9 @@ async function main() {
     data: {
       email: 'john@example.com',
       username: 'john_doe',
-      passwordHash: hashPassword('john123'),
+      cognitoSub: 'john-cognito-sub-456',
       name: 'John Doe',
+      isActive: true,
     },
   });
 
