@@ -19,7 +19,8 @@
 				"saoudrizwan.claude-dev",
 				"github.vscode-github-actions",
 				"Anthropic.claude-code",
-				"ms-vscode.vscode-typescript-next"
+				"ms-vscode.vscode-typescript-next",
+				"oven.bun-vscode"
 			]
 		}
 	},
