@@ -49,15 +49,20 @@ export class UpdateListUseCase {
         throw new Error('List title is too long');
       }
       const oldTitle = list.title;
-      list.updateTitle(title.trim());
-      changes.title = { from: oldTitle, to: list.title };
+      const newTitle = title.trim();
+      if (oldTitle !== newTitle) {
+        list.updateTitle(newTitle);
+        changes.title = { from: oldTitle, to: newTitle };
+      }
     }
 
     // Update color if provided
     if (color !== undefined) {
       const oldColor = list.color;
-      list.updateColor(color);
-      changes.color = { from: oldColor, to: list.color };
+      if (oldColor !== color) {
+        list.updateColor(color);
+        changes.color = { from: oldColor, to: color };
+      }
     }
 
     // Save updated list
