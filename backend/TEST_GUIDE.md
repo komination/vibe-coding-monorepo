@@ -4,19 +4,23 @@ This guide explains the test infrastructure setup for the Kanban backend applica
 
 ## Test Framework
 
-The backend uses **Bun's built-in test runner**, which is Jest-compatible and requires no additional dependencies. Bun test provides:
+The backend uses **Bun's built-in test runner**, which is Jest-compatible and requires no additional dependencies. Bun provides native TypeScript execution without compilation, making it ideal for modern TypeScript development.
 
-- Fast test execution
-- Built-in TypeScript support
-- Coverage reporting
-- Watch mode
-- Mocking capabilities
+**Key Features:**
+
+- Fast test execution with native TypeScript support
+- No build step required - TypeScript files run directly
+- Jest-compatible API for familiar testing patterns
+- Built-in coverage reporting
+- Watch mode for development
+- Comprehensive mocking capabilities
+- Zero configuration setup
 
 ## Test Structure
 
 Tests are organized following the Clean Architecture layers:
 
-```
+```text
 src/
 ├── domain/__tests__/
 │   ├── entities/        # Domain entity tests
@@ -77,13 +81,13 @@ The test suite uses a separate PostgreSQL database (`kanban_test`) to avoid affe
 
 ## Writing Tests
 
-### 実装済みテストパターン
+### Implemented Test Patterns
 
-現在のコードベースで使用されている実際のテストパターンを参考にしてください。
+Use the actual test patterns currently implemented in the codebase as reference.
 
 ### Entity Tests (Domain Layer)
 
-エンティティのテストには **Builder Pattern** を使用し、包括的なテストケースを実装:
+Entity tests use the **Builder Pattern** and implement comprehensive test cases:
 
 ```typescript
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
@@ -132,7 +136,7 @@ describe("Card Entity", () => {
 
 ### Use Case Tests (Domain Layer)
 
-ユースケースはモックリポジトリを使用して依存関係を分離:
+Use cases isolate dependencies using mock repositories:
 
 ```typescript
 import { describe, test, expect, beforeEach, mock } from "bun:test";
@@ -197,7 +201,7 @@ describe("CreateBoardUseCase", () => {
 
 ### Repository Integration Tests
 
-実際のデータベースを使用した統合テスト:
+Integration tests using real database:
 
 ```typescript
 import { describe, test, expect, beforeEach } from "bun:test";
@@ -264,7 +268,7 @@ describe("PrismaBoardRepository", () => {
 
 ### API Route Tests
 
-ユニットテストと統合テストの両方を実装:
+Implementing both unit tests and integration tests:
 
 ```typescript
 import { describe, test, expect, beforeEach } from "bun:test";
@@ -359,7 +363,7 @@ describe("Board Routes", () => {
 
 ### Validation Tests
 
-詳細なバリデーションロジックのテスト:
+Detailed validation logic tests:
 
 ```typescript
 import { describe, test, expect } from "bun:test";
@@ -409,7 +413,7 @@ describe("BoardValidator", () => {
 
 ### Entity Factories (Builder Pattern)
 
-現在実装されているBuilderパターンを使用してテストデータを作成:
+Use the currently implemented Builder patterns to create test data:
 
 ```typescript
 import { UserBuilder, BoardBuilder, ListBuilder, CardBuilder } from "@/test/fixtures/entityFactories";
@@ -444,7 +448,7 @@ const cognitoUser = UserBuilder.valid()
 
 ### Test Helpers
 
-実装済みのテストユーティリティ:
+Implemented test utilities:
 
 ```typescript
 import { 
@@ -480,7 +484,7 @@ await cleanDatabase(prismaTest);
 
 ### Mock Authentication
 
-API테스ト用の認証モック:
+Authentication mocks for API tests:
 
 ```typescript
 import { mockAuthMiddleware, createMockAuthToken } from "@/test/utils/mockAuth";
@@ -518,7 +522,7 @@ describe("API Tests", () => {
 
 ### Test Container & Dependency Injection
 
-テスト用のDIコンテナ設定:
+DI container setup for tests:
 
 ```typescript
 import { initTestContainer, createMockRepositories } from "@/test/utils/testContainer";
@@ -532,23 +536,23 @@ const mockRepos = createMockRepositories();
 const useCase = new SomeUseCase(mockRepos.boardRepository, mockRepos.userRepository);
 ```
 
-## 今後の実装ガイドライン
+## Future Implementation Guidelines
 
-### 優先度 1: ドメイン層の完成
+### Priority 1: Complete Domain Layer
 
-**エンティティテスト** (未実装の7エンティティ):
+**Entity Tests** (7 unimplemented entities):
 ```bash
 src/domain/__tests__/entities/
-├── Label.test.ts          # 🔄 作成必要
-├── Activity.test.ts       # 🔄 作成必要
-├── BoardMember.test.ts    # 🔄 作成必要
-├── Checklist.test.ts      # 🔄 作成必要
-├── ChecklistItem.test.ts  # 🔄 作成必要
-├── Attachment.test.ts     # 🔄 作成必要
-└── Comment.test.ts        # 🔄 作成必要
+├── Label.test.ts          # 🔄 To be created
+├── Activity.test.ts       # 🔄 To be created
+├── BoardMember.test.ts    # 🔄 To be created
+├── Checklist.test.ts      # 🔄 To be created
+├── ChecklistItem.test.ts  # 🔄 To be created
+├── Attachment.test.ts     # 🔄 To be created
+└── Comment.test.ts        # 🔄 To be created
 ```
 
-**ユースケーステスト** (31個のユースケース):
+**Use Case Tests** (31 use cases):
 ```bash
 src/domain/__tests__/usecases/
 ├── board/
@@ -565,62 +569,62 @@ src/domain/__tests__/usecases/
     └── MoveCard.test.ts
 ```
 
-### 優先度 2: インフラストラクチャ層
+### Priority 2: Infrastructure Layer
 
-**リポジトリテスト** (5個の未実装リポジトリ):
+**Repository Tests** (5 unimplemented repositories):
 ```bash
 src/infrastructure/__tests__/repositories/
-├── PrismaUserRepository.test.ts      # 🔄 作成必要
-├── PrismaCardRepository.test.ts      # 🔄 作成必要
-├── PrismaListRepository.test.ts      # 🔄 作成必要
-├── PrismaLabelRepository.test.ts     # 🔄 作成必要
-└── PrismaActivityRepository.test.ts  # 🔄 作成必要
+├── PrismaUserRepository.test.ts      # 🔄 To be created
+├── PrismaCardRepository.test.ts      # 🔄 To be created
+├── PrismaListRepository.test.ts      # 🔄 To be created
+├── PrismaLabelRepository.test.ts     # 🔄 To be created
+└── PrismaActivityRepository.test.ts  # 🔄 To be created
 ```
 
-### 優先度 3: アプリケーション層
+### Priority 3: Application Layer
 
-**バリデーターテスト**:
+**Validator Tests**:
 ```bash
 src/application/__tests__/validators/
-├── AuthValidator.test.ts    # 🔄 作成必要
-├── CardValidator.test.ts    # 🔄 作成必要
-├── ListValidator.test.ts    # 🔄 作成必要
-└── LabelValidator.test.ts   # 🔄 作成必要
+├── AuthValidator.test.ts    # 🔄 To be created
+├── CardValidator.test.ts    # 🔄 To be created
+├── ListValidator.test.ts    # 🔄 To be created
+└── LabelValidator.test.ts   # 🔄 To be created
 ```
 
-### 優先度 4: インターフェース層
+### Priority 4: Interface Layer
 
-**ルートテスト**:
+**Route Tests**:
 ```bash
 src/interfaces/__tests__/routes/
-├── authRoutes.test.ts       # 🔄 作成必要
+├── authRoutes.test.ts       # 🔄 To be created
 ├── authRoutes.integration.test.ts
-├── cardRoutes.test.ts       # 🔄 作成必要
+├── cardRoutes.test.ts       # 🔄 To be created
 ├── cardRoutes.integration.test.ts
-├── listRoutes.test.ts       # 🔄 作成必要
+├── listRoutes.test.ts       # 🔄 To be created
 ├── listRoutes.integration.test.ts
-├── labelRoutes.test.ts      # 🔄 作成必要
+├── labelRoutes.test.ts      # 🔄 To be created
 └── labelRoutes.integration.test.ts
 ```
 
-### テスト実装の推奨順序
+### Recommended Test Implementation Order
 
-1. **エンティティファクトリーの拡張** - 未実装エンティティ用のBuilderを追加
-2. **ドメインエンティティテスト** - 既存パターンに従って実装
-3. **ユースケーステスト** - CreateBoardパターンを参考に実装
-4. **リポジトリ統合テスト** - PrismaBoardRepositoryパターンを参考
-5. **APIルートテスト** - boardRoutesのパターンを再利用
+1. **Entity Factory Extensions** - Add Builders for unimplemented entities
+2. **Domain Entity Tests** - Implement following existing patterns
+3. **Use Case Tests** - Implement referencing CreateBoard pattern
+4. **Repository Integration Tests** - Reference PrismaBoardRepository pattern
+5. **API Route Tests** - Reuse boardRoutes patterns
 
-### テストカバレッジ目標
+### Test Coverage Goals
 
-- **ドメイン層**: 90%以上 (ビジネスロジックの完全テスト)
-- **アプリケーション層**: 85%以上 (バリデーション・制御ロジック)
-- **インフラ層**: 80%以上 (データアクセス・統合)
-- **インターフェース層**: 75%以上 (API仕様・エラーハンドリング)
+- **Domain Layer**: 90%+ (Complete business logic testing)
+- **Application Layer**: 85%+ (Validation & control logic)
+- **Infrastructure Layer**: 80%+ (Data access & integration)
+- **Interface Layer**: 75%+ (API specifications & error handling)
 
 ## Best Practices
 
-現在の実装で採用されているベストプラクティス:
+Best practices adopted in the current implementation:
 
 ### 1. Builder Pattern for Test Data
 ```typescript
@@ -773,11 +777,11 @@ test("should fail if title is empty", () => {
 
 ### 11. Test Coverage Guidelines
 
-- **100% Entity Methods**: 全てのpublicメソッドをテスト
-- **Edge Cases**: 境界値、null/undefined、空文字列
-- **Error Paths**: 例外的な状況とエラーハンドリング
-- **Integration Points**: 複数コンポーネント間の相互作用
-- **Business Rules**: ドメインルールとバリデーション
+- **100% Entity Methods**: Test all public methods
+- **Edge Cases**: Boundary values, null/undefined, empty strings
+- **Error Paths**: Exceptional situations and error handling
+- **Integration Points**: Interactions between multiple components
+- **Business Rules**: Domain rules and validation
 
 ### 12. Performance Considerations
 
@@ -856,138 +860,252 @@ Regenerate Prisma client if you see type errors:
 bun run db:generate
 ```
 
-## 実装済みテスト
+## Implemented Tests
 
-### テストカバレッジ概要
+### Test Coverage Overview
 
-現在の実装状況（2024年6月28日時点）:
-- **総テスト数**: 104テスト実装済み
-- **ドメイン層**: 40% カバレッジ (4/11 エンティティ完全実装)
-- **アプリケーション層**: 20% カバレッジ (1/5 バリデーター実装)
-- **インフラ層**: 17% カバレッジ (1/6 リポジトリ実装)
-- **インターフェース層**: 17% カバレッジ (1/6 ルートグループ実装)
+Current implementation status (as of June 28, 2024):
+- **Total Tests**: 570+ tests implemented (26 test files)
+- **Domain Layer**: 68% coverage (6/7 entities + 24/35 use cases implemented)
+- **Application Layer**: 20% coverage (1/5 validators implemented)
+- **Infrastructure Layer**: 17% coverage (1/6 repositories implemented)
+- **Interface Layer**: 20% coverage (1/5 route groups implemented)
 
-### ✅ 完全実装済み
+### ✅ Fully Implemented
 
-#### ドメイン層 - エンティティ (104テスト)
+#### Domain Layer - Entities (6/7 implemented - 250+ tests)
 
-**User Entity** (22テスト) - `/domain/__tests__/entities/User.test.ts`
-- ✅ 新規作成: `create`, `createCognitoUser` (UUID生成、プロパティ設定)
-- ✅ 永続化復元: `fromPersistence` (完全なデータ復元)
-- ✅ プロファイル操作: `updateProfile` (名前・アバター更新)
-- ✅ アカウント状態: `activate`/`deactivate` (状態切り替え)
-- ✅ Cognito統合: `updateCognito` (新インスタンス生成パターン)
-- ✅ シリアライゼーション: `toJSON` (完全なデータ出力)
-- ✅ ビジネスルール検証: バリデーション責任分離パターン
+**User Entity** (22 tests) - `/domain/__tests__/entities/User.test.ts`
+- ✅ New creation: `create`, `createCognitoUser` (UUID generation, property setting)
+- ✅ Persistence restoration: `fromPersistence` (complete data restoration)
+- ✅ Profile operations: `updateProfile` (name & avatar updates)
+- ✅ Account state: `activate`/`deactivate` (state switching)
+- ✅ Cognito integration: `updateCognito` (new instance generation pattern)
+- ✅ Serialization: `toJSON` (complete data output)
+- ✅ Business rule validation: validation responsibility separation pattern
 
-**Board Entity** (26テスト) - `/domain/__tests__/entities/Board.test.ts`
-- ✅ ボード作成・復元: `create`, `fromPersistence`
-- ✅ プロパティ更新: `updateTitle`, `updateDescription`, `updateBackground`
-- ✅ 公開設定: `makePublic`/`makePrivate` (可視性制御)
-- ✅ アーカイブ: `archive`/`unarchive` (状態管理)
-- ✅ 所有権確認: `isOwner`/`isOwnedBy` (アクセス制御)
-- ✅ 権限システム: `canBeEditedBy`, `canBeViewedBy` (ロールベース認可)
-- ✅ ビジネスルール: ドメイン層での制約なし設計
+**Board Entity** (26 tests) - `/domain/__tests__/entities/Board.test.ts`
+- ✅ Board creation & restoration: `create`, `fromPersistence`
+- ✅ Property updates: `updateTitle`, `updateDescription`, `updateBackground`
+- ✅ Public settings: `makePublic`/`makePrivate` (visibility control)
+- ✅ Archive: `archive`/`unarchive` (state management)
+- ✅ Ownership verification: `isOwner`/`isOwnedBy` (access control)
+- ✅ Permission system: `canBeEditedBy`, `canBeViewedBy` (role-based authorization)
+- ✅ Business rules: no constraints in domain layer design
 
-**List Entity** (27テスト) - `/domain/__tests__/entities/List.test.ts`
-- ✅ リスト作成・復元: `create`, `fromPersistence`
-- ✅ プロパティ更新: `updateTitle`, `updateColor`, `updatePosition`
-- ✅ 位置管理: ゼロ・負数・小数点対応
-- ✅ 所属確認: `belongsToBoard` (関連性チェック)
-- ✅ シリアライゼーション: 完全なJSONエクスポート
+**List Entity** (27 tests) - `/domain/__tests__/entities/List.test.ts`
+- ✅ List creation & restoration: `create`, `fromPersistence`
+- ✅ Property updates: `updateTitle`, `updateColor`, `updatePosition`
+- ✅ Position management: zero, negative, decimal support
+- ✅ Belonging verification: `belongsToBoard` (relationship check)
+- ✅ Serialization: complete JSON export
 
-**Card Entity** (29テスト) - `/domain/__tests__/entities/Card.test.ts`
-- ✅ カード作成・復元: `create`, `fromPersistence`
-- ✅ 基本更新: `updateTitle`, `updateDescription`, `updatePosition`
-- ✅ 日付管理: `updateDueDate`, `updateStartDate` (期限・開始日)
-- ✅ ビジュアル: `updateCover` (カバー画像)
-- ✅ リスト移動: `moveToList` (位置更新込み)
-- ✅ 担当者管理: `assignTo` (割り当て・解除・再割り当て)
-- ✅ アーカイブ: `archive`/`unarchive`
-- ✅ 関連確認: `belongsToList`, `isCreatedBy`, `isAssignedTo`
-- ✅ 期限判定: `isOverdue` (現在時刻との比較)
+**Card Entity** (29 tests) - `/domain/__tests__/entities/Card.test.ts`
+- ✅ Card creation & restoration: `create`, `fromPersistence`
+- ✅ Basic updates: `updateTitle`, `updateDescription`, `updatePosition`
+- ✅ Date management: `updateDueDate`, `updateStartDate` (due date & start date)
+- ✅ Visual: `updateCover` (cover image)
+- ✅ List movement: `moveToList` (including position updates)
+- ✅ Assignee management: `assignTo` (assign, unassign, reassign)
+- ✅ Archive: `archive`/`unarchive`
+- ✅ Relationship verification: `belongsToList`, `isCreatedBy`, `isAssignedTo`
+- ✅ Due date check: `isOverdue` (comparison with current time)
 
-#### ドメイン層 - ユースケース
+**Label Entity** ✅ **NEW** (85 tests) - `/domain/__tests__/entities/Label.test.ts`
+- ✅ Label creation & restoration: `create`, `fromPersistence` (UUID generation, property setting)
+- ✅ Property updates: `updateName`, `updateColor` (name & color changes)
+- ✅ Board relationship: `belongsToBoard` (belonging verification)
+- ✅ Serialization: `toJSON` (complete JSON export)
+- ✅ Edge cases: empty strings, special characters, boundary value tests
+- ✅ Business rules: no constraints in domain layer design
 
-**CreateBoard Use Case** (CreateBoard.test.ts) - `/domain/__tests__/usecases/CreateBoard.test.ts`
-- ✅ 正常フロー: ボード作成、オーナー追加、アクティビティログ
-- ✅ 入力値検証: タイトル必須、長さ制限、空白文字のトリム
-- ✅ ビジネスルール: オーナー存在確認、アクティブアカウントのみ
-- ✅ エラーハンドリング: 詳細なエラーメッセージ
-- ✅ リポジトリ連携: モック使用による依存関係テスト
+**Activity Entity** ✅ **NEW** (64 tests) - `/domain/__tests__/entities/Activity.test.ts`
+- ✅ Activity creation & restoration: `create`, `fromPersistence`
+- ✅ All action types: CREATE, UPDATE, DELETE, MOVE, ARCHIVE, etc.
+- ✅ All entity types: BOARD, LIST, CARD, COMMENT, ATTACHMENT, etc.
+- ✅ Data management: `updateData` (complex metadata storage)
+- ✅ Relationship verification: `belongsToBoard`, `belongsToCard` (relationship validation)
+- ✅ Serialization: JSON conversion of complex data structures
 
-#### アプリケーション層
+#### Domain Layer - Use Cases (24/35 implemented)
+
+**Board Operations (5/5 implemented):**
+- ✅ **CreateBoard** - Board creation, owner addition, activity logging
+- ✅ **UpdateBoard** - Board information update, permission verification, change history
+- ✅ **DeleteBoard** - Board deletion, cascade processing, permission verification
+- ✅ **GetBoard** - Board retrieval, membership verification, data formatting
+- ✅ **GetBoardLists** - Board list retrieval, order preservation
+
+**Card Operations (8/8 implemented):**
+- ✅ **CreateCard** - Card creation, list placement, position management
+- ✅ **UpdateCard** - Card updates, property changes, validation
+- ✅ **DeleteCard** - Card deletion, related data cleanup
+- ✅ **GetCard** - Card detail retrieval, permission verification
+- ✅ **MoveCard** - Card movement, position adjustment, inter-list transfer
+- ✅ **ArchiveCard** - Card archive processing
+- ✅ **UnarchiveCard** - Card unarchive processing
+- ✅ **ReorderCards** - Card reordering, position adjustment
+
+**List Operations (6/6 implemented):**
+- ✅ **CreateList** - List creation, board placement, position management
+- ✅ **UpdateList** - List updates, property changes
+- ✅ **DeleteList** - List deletion, card processing
+- ✅ **GetListCards** - List card retrieval, order preservation
+- ✅ **ReorderLists** - List reordering, position adjustment
+- ✅ **ArchiveList** - List archive processing
+
+**User Operations (1/16 implemented):**
+- ✅ **SyncCognitoUser** - Cognito integration, user synchronization, comprehensive tests
+- 🔄 GetUserProfile, UpdateUserProfile, GetUserBoards, LogoutUser
+- 🔄 Other 12 user-related use cases (unimplemented)
+
+#### Application Layer
 
 **BoardValidator** (BoardValidator.test.ts) - `/application/__tests__/validators/BoardValidator.test.ts`
-- ✅ 作成バリデーション: `validateCreateBoard` (必須項目、長さ制限、URL検証)
-- ✅ 更新バリデーション: `validateUpdateBoard` (部分更新対応)
-- ✅ メンバー追加: `validateAddMember` (ユーザーID、ロール検証)
-- ✅ メンバー更新: `validateUpdateMember` (ロール変更)
-- ✅ エラー処理: 詳細なフィールド別エラーメッセージ
+- ✅ Creation validation: `validateCreateBoard` (required fields, length limits, URL validation)
+- ✅ Update validation: `validateUpdateBoard` (partial update support)
+- ✅ Member addition: `validateAddMember` (user ID, role validation)
+- ✅ Member update: `validateUpdateMember` (role changes)
+- ✅ Error handling: detailed field-specific error messages
 
-#### インフラストラクチャ層
+#### Infrastructure Layer
 
 **PrismaBoardRepository** (PrismaBoardRepository.test.ts) - `/infrastructure/__tests__/repositories/PrismaBoardRepository.test.ts`
-- ✅ CRUD操作: `save`, `findById`, `update`, `delete`
-- ✅ 検索機能: `findByOwner`, `findByMember` (フィルタリング・ページング)
-- ✅ メンバー管理: `addMember`, `removeMember` (ロール設定)
-- ✅ データ整合性: 外部キー制約、カスケード削除
-- ✅ 実データベース: PostgreSQL統合テスト
+- ✅ CRUD operations: `save`, `findById`, `update`, `delete`
+- ✅ Search functionality: `findByOwner`, `findByMember` (filtering & pagination)
+- ✅ Member management: `addMember`, `removeMember` (role configuration)
+- ✅ Data integrity: foreign key constraints, cascade deletion
+- ✅ Real database: PostgreSQL integration tests
 
-#### インターフェース層
+#### Interface Layer
 
 **Board Routes** - `/interfaces/__tests__/routes/`
-- **ユニットテスト** (boardRoutes.test.ts):
+- **Unit Tests** (boardRoutes.test.ts):
   - ✅ CRUD API: POST, GET, PUT, DELETE `/boards`
-  - ✅ 認証・認可: Bearer token, ロールベースアクセス制御
-  - ✅ バリデーション: 入力検証、エラーレスポンス
-  - ✅ ステータスコード: 適切なHTTPレスポンス
+  - ✅ Authentication & Authorization: Bearer token, role-based access control
+  - ✅ Validation: input validation, error responses
+  - ✅ Status codes: appropriate HTTP responses
 
-- **統合テスト** (boardRoutes.integration.test.ts):
-  - ✅ エンドツーエンド: API→DB→レスポンスの完全フロー
-  - ✅ データ永続化: 実データベースでの作成・更新・削除
-  - ✅ カスケード処理: ボード削除時の関連データ削除
-  - ✅ メンバーシップ: ボードメンバー追加・削除・ロール管理
+- **Integration Tests** (boardRoutes.integration.test.ts):
+  - ✅ End-to-end: API→DB→Response complete flow
+  - ✅ Data persistence: real database creation, update, deletion
+  - ✅ Cascade processing: related data deletion on board deletion
+  - ✅ Membership: board member addition, deletion, role management
 
-### ✅ テストインフラストラクチャ (完全実装)
+### ✅ Test Infrastructure (Fully Implemented)
 
-**テストセットアップ** (`/test/setup.ts`):
-- ✅ テスト専用データベース設定
-- ✅ 自動クリーンアップ (テスト間のデータ分離)
-- ✅ Prismaクライアント設定
+**Test Setup** (`/test/setup.ts`):
 
-**テストファクトリー** (`/test/fixtures/entityFactories.ts`):
-- ✅ Builderパターン実装 (UserBuilder, BoardBuilder, ListBuilder, CardBuilder)
-- ✅ メソッドチェーン対応
-- ✅ デフォルト値設定とカスタマイズ可能性
+- ✅ Test-specific database configuration
+- ✅ Automatic cleanup (data isolation between tests)
+- ✅ Prisma client configuration
 
-**テストユーティリティ** (`/test/utils/`):
-- ✅ 日付モック (`mockDate`) - 一貫したタイムスタンプ
-- ✅ 認証モック (`mockAuthMiddleware`) - APIテスト用
-- ✅ データクリーンアップ (`cleanDatabase`)
-- ✅ DIコンテナ (`testContainer`) - 依存性注入テスト
+**Test Factories** (`/test/fixtures/entityFactories.ts`):
 
-### 🟡 部分実装・未実装領域
+- ✅ Builder pattern implementation (UserBuilder, BoardBuilder, ListBuilder, CardBuilder)
+- ✅ Method chaining support
+- ✅ Default value configuration and customization capability
 
-#### ドメイン層 (未実装)
-- **エンティティ**: Label, Activity, BoardMember, Checklist, ChecklistItem, Attachment, Comment (7エンティティ)
-- **ユースケース**: 31個のユースケース (CreateBoard以外すべて)
-  - ボード操作: UpdateBoard, DeleteBoard, GetBoard, etc.
-  - リスト操作: CreateList, UpdateList, DeleteList, etc.
-  - カード操作: CreateCard, UpdateCard, MoveCard, etc.
-  - メンバー管理: AddBoardMember, RemoveBoardMember, etc.
+**Test Utilities** (`/test/utils/`):
 
-#### アプリケーション層 (未実装)
-- **バリデーター**: AuthValidator, CardValidator, ListValidator, LabelValidator (4バリデーター)
-- **コントローラー**: ユニットテスト (モック使用)
-- **プレゼンター**: データ変換ロジックテスト
+- ✅ Date mocking (`mockDate`) - consistent timestamps
+- ✅ Authentication mocking (`mockAuthMiddleware`) - for API tests
+- ✅ Data cleanup (`cleanDatabase`)
+- ✅ DI container (`testContainer`) - dependency injection testing
 
-#### インフラストラクチャ層 (未実装)
-- **リポジトリ**: PrismaUserRepository, PrismaCardRepository, PrismaListRepository, PrismaLabelRepository, PrismaActivityRepository (5リポジトリ)
-- **AWS統合**: Cognito統合テスト
-- **外部サービス**: サードパーティAPI統合
+### 🔄 Partially Implemented / Unimplemented Areas
 
-#### インターフェース層 (未実装)
-- **ルート**: authRoutes, cardRoutes, listRoutes, labelRoutes (4ルートグループ)
-- **ミドルウェア**: 認証、エラーハンドリング、レート制限
-- **DTO**: データ転送オブジェクトのテスト
+#### Domain Layer
+
+**Entities (1/7 unimplemented):**
+- 🔄 **BoardMember.test.ts** - Only unimplemented entity test
+- ✅ User, Board, List, Card, Label, Activity - Fully implemented
+- 🔄 Checklist, ChecklistItem, Attachment, Comment - Entities themselves not implemented
+
+**Use Cases (11/35 unimplemented):**
+- 🔄 **Label Operations**: CreateLabel, UpdateLabel, DeleteLabel, GetBoardLabels, AddLabelToCard, RemoveLabelFromCard, GetCardLabels (7 use cases)
+- 🔄 **Member Management**: AddBoardMember, RemoveBoardMember, UpdateMemberRole (3 use cases)
+- 🔄 **User Operations**: GetUserProfile (1 use case - other user operations not implemented)
+
+#### Application Layer (4/5 unimplemented)
+- ✅ **BoardValidator** - Fully implemented (create/update/member management validation)
+- 🔄 **AuthValidator, CardValidator, ListValidator, LabelValidator** (4 validators)
+- 🔄 **Controllers**: Unit tests (using mocks)
+- 🔄 **Presenters**: Data transformation logic tests
+
+#### Infrastructure Layer (5/6 unimplemented)
+- ✅ **PrismaBoardRepository** - Fully implemented (CRUD, search, member management)
+- 🔄 **PrismaUserRepository, PrismaCardRepository, PrismaListRepository, PrismaLabelRepository, PrismaActivityRepository** (5 repositories)
+- 🔄 **AWS Integration**: Cognito integration tests
+- 🔄 **External Services**: Third-party API integration
+
+#### Interface Layer (4/5 unimplemented)
+- ✅ **boardRoutes** - Fully implemented (unit tests + integration tests)
+- 🔄 **authRoutes, cardRoutes, listRoutes, labelRoutes** (4 route groups)
+- 🔄 **Middleware**: Authentication, error handling, rate limiting
+- 🔄 **DTOs**: Data transfer object tests
+
+## Remaining Implementation Tasks
+
+### High Priority: Complete Domain Layer
+
+**Entity Tests** (1 unimplemented entity):
+
+```bash
+src/domain/__tests__/entities/
+└── BoardMember.test.ts    # 🔄 Only unimplemented entity
+```
+
+**Use Case Tests** (11/35 unimplemented):
+
+```bash
+src/domain/__tests__/usecases/
+├── labels/          # 7 use cases (unimplemented)
+├── members/         # 3 use cases (unimplemented)
+└── users/           # 1 use case (GetUserProfile)
+```
+
+### Medium Priority: Infrastructure Layer
+
+**Repository Tests** (5/6 unimplemented):
+
+```bash
+src/infrastructure/__tests__/repositories/
+├── PrismaUserRepository.test.ts      # 🔄 Unimplemented
+├── PrismaCardRepository.test.ts      # 🔄 Unimplemented
+├── PrismaListRepository.test.ts      # 🔄 Unimplemented
+├── PrismaLabelRepository.test.ts     # 🔄 Unimplemented
+└── PrismaActivityRepository.test.ts  # 🔄 Unimplemented
+```
+
+### Low Priority: Application Layer
+
+**Validator Tests** (4/5 unimplemented):
+
+```bash
+src/application/__tests__/validators/
+├── AuthValidator.test.ts    # 🔄 Unimplemented
+├── CardValidator.test.ts    # 🔄 Unimplemented
+├── ListValidator.test.ts    # 🔄 Unimplemented
+└── LabelValidator.test.ts   # 🔄 Unimplemented
+```
+
+### Low Priority: Interface Layer
+
+**Route Tests** (4/5 unimplemented):
+
+```bash
+src/interfaces/__tests__/routes/
+├── authRoutes.test.ts       # 🔄 Unimplemented
+├── cardRoutes.test.ts       # 🔄 Unimplemented
+├── listRoutes.test.ts       # 🔄 Unimplemented
+└── labelRoutes.test.ts      # 🔄 Unimplemented
+```
+
+## Recommended Implementation Order
+
+1. **BoardMember Entity Tests** - Follow existing entity patterns
+2. **Missing Use Case Tests** - Reference existing 24 use case test patterns
+3. **Repository Integration Tests** - Reference PrismaBoardRepository patterns
+4. **Validator Tests** - Reference BoardValidator patterns
+5. **API Route Tests** - Reuse boardRoutes patterns
