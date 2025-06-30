@@ -199,6 +199,73 @@ describe("CreateBoardUseCase", () => {
 });
 ```
 
+**CreateLabel Use Case Pattern** (newly implemented):
+
+```typescript
+import { describe, test, expect, beforeEach, mock } from "bun:test";
+import { CreateLabelUseCase } from "@/domain/usecases/CreateLabel";
+import { Board, BoardRole } from "@/domain/entities/Board";
+
+describe("CreateLabelUseCase", () => {
+  let useCase: CreateLabelUseCase;
+  let mockLabelRepository: LabelRepository;
+  let mockBoardRepository: BoardRepository;
+  let mockActivityRepository: ActivityRepository;
+
+  beforeEach(() => {
+    // Create a default board entity
+    const defaultBoard = Board.create({
+      title: "Test Board",
+      description: "Test Description",
+      isPublic: false,
+      isArchived: false,
+      ownerId: "board-owner",
+    });
+
+    mockBoardRepository = {
+      findById: mock(() => Promise.resolve(defaultBoard)),
+      getMemberRole: mock(() => Promise.resolve("ADMIN" as BoardRole)),
+      // ... other methods
+    } as unknown as BoardRepository;
+
+    useCase = new CreateLabelUseCase(
+      mockLabelRepository,
+      mockBoardRepository,
+      mockActivityRepository
+    );
+  });
+
+  test("should create a label successfully", async () => {
+    const request = {
+      name: "Bug",
+      color: "#ff0000",
+      boardId: "board-123",
+      userId: "user-456",
+    };
+
+    const result = await useCase.execute(request);
+
+    expect(result.label.name).toBe("Bug");
+    expect(result.label.color).toBe("#FF0000"); // Should be uppercase
+    expect(mockLabelRepository.save).toHaveBeenCalledTimes(1);
+    expect(mockActivityRepository.save).toHaveBeenCalledTimes(1);
+  });
+
+  test("should deny MEMBER to create label", async () => {
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("MEMBER" as BoardRole));
+
+    const request = {
+      name: "Bug", 
+      color: "#ff0000",
+      boardId: "board-123",
+      userId: "user-456",
+    };
+
+    expect(useCase.execute(request)).rejects.toThrow("Access denied");
+  });
+});
+```
+
 ### Repository Integration Tests
 
 Integration tests using real database:
@@ -416,7 +483,17 @@ describe("BoardValidator", () => {
 Use the currently implemented Builder patterns to create test data:
 
 ```typescript
-import { UserBuilder, BoardBuilder, ListBuilder, CardBuilder } from "@/test/fixtures/entityFactories";
+import { 
+  UserBuilder, 
+  BoardBuilder, 
+  ListBuilder, 
+  CardBuilder,
+  createBoardMember,
+  createOwnerMember,
+  createAdminMember,
+  createRegularMember,
+  createViewerMember
+} from "@/test/fixtures/entityFactories";
 
 // Builder pattern with method chaining
 const user = UserBuilder.valid()
@@ -439,6 +516,13 @@ const card = CardBuilder.valid()
   .assignedTo(user.id)
   .withDueDate(new Date("2024-12-31"))
   .build();
+
+// BoardMember factory functions
+const member = createBoardMember({ userId: "user-123", role: "ADMIN" });
+const owner = createOwnerMember("owner-123");
+const admin = createAdminMember("admin-123");
+const regularMember = createRegularMember("member-123");
+const viewer = createViewerMember("viewer-123");
 
 // Cognito user creation
 const cognitoUser = UserBuilder.valid()
@@ -864,16 +948,16 @@ bun run db:generate
 
 ### Test Coverage Overview
 
-Current implementation status (as of June 28, 2024):
-- **Total Tests**: 570+ tests implemented (26 test files)
-- **Domain Layer**: 68% coverage (6/7 entities + 24/35 use cases implemented)
+Current implementation status (as of December 30, 2024):
+- **Total Tests**: 876+ tests implemented (37 test files)
+- **Domain Layer**: 99% coverage (7/7 entities + 34/35 use cases implemented)
 - **Application Layer**: 20% coverage (1/5 validators implemented)
 - **Infrastructure Layer**: 17% coverage (1/6 repositories implemented)
 - **Interface Layer**: 20% coverage (1/5 route groups implemented)
 
 ### ✅ Fully Implemented
 
-#### Domain Layer - Entities (6/7 implemented - 250+ tests)
+#### Domain Layer - Entities (7/7 implemented - 296+ tests)
 
 **User Entity** (22 tests) - `/domain/__tests__/entities/User.test.ts`
 - ✅ New creation: `create`, `createCognitoUser` (UUID generation, property setting)
@@ -927,7 +1011,16 @@ Current implementation status (as of June 28, 2024):
 - ✅ Relationship verification: `belongsToBoard`, `belongsToCard` (relationship validation)
 - ✅ Serialization: JSON conversion of complex data structures
 
-#### Domain Layer - Use Cases (24/35 implemented)
+**BoardMember Entity** ✅ **NEW** (46 tests) - `/domain/__tests__/entities/BoardMember.test.ts`
+- ✅ BoardMember creation & validation: factory patterns, default properties
+- ✅ Role validation: OWNER, ADMIN, MEMBER, VIEWER role constraints
+- ✅ Date handling: joinedAt precision, timezone, edge cases
+- ✅ Data integrity: userId validation, special characters, UUID format
+- ✅ Convenience factories: createOwnerMember, createAdminMember, createRegularMember, createViewerMember
+- ✅ Serialization: JSON round-trip, type safety after deserialization
+- ✅ Edge cases: whitespace, extremely long values, epoch dates, immutability
+
+#### Domain Layer - Use Cases (34/35 implemented)
 
 **Board Operations (5/5 implemented):**
 - ✅ **CreateBoard** - Board creation, owner addition, activity logging
@@ -953,6 +1046,20 @@ Current implementation status (as of June 28, 2024):
 - ✅ **GetListCards** - List card retrieval, order preservation
 - ✅ **ReorderLists** - List reordering, position adjustment
 - ✅ **ArchiveList** - List archive processing
+
+**Board Member Operations (3/3 implemented):**
+- ✅ **AddBoardMember** ✅ **NEW** (26 tests) - Member addition, role validation, permission checks
+- ✅ **RemoveBoardMember** ✅ **NEW** (25 tests) - Member removal, self-removal, owner protection
+- ✅ **UpdateMemberRole** ✅ **NEW** (29 tests) - Role updates, escalation/demotion, ownership protection
+
+**Label Operations (7/7 implemented - 169 tests total):**
+- ✅ **CreateLabel** (21 tests) - Label creation, color validation, permission checks, activity logging
+- ✅ **UpdateLabel** ✅ **NEW** (29 tests) - Label modification with permission verification, change tracking
+- ✅ **DeleteLabel** ✅ **NEW** (18 tests) - Label deletion and cleanup, cascade handling
+- ✅ **GetBoardLabels** ✅ **NEW** (21 tests) - Board label retrieval, access control
+- ✅ **AddLabelToCard** ✅ **NEW** (24 tests) - Card labeling functionality, board validation
+- ✅ **RemoveLabelFromCard** ✅ **NEW** (28 tests) - Label removal from cards, attachment verification
+- ✅ **GetCardLabels** ✅ **NEW** (28 tests) - Card label retrieval, permission checks
 
 **User Operations (1/16 implemented):**
 - ✅ **SyncCognitoUser** - Cognito integration, user synchronization, comprehensive tests
@@ -1002,7 +1109,8 @@ Current implementation status (as of June 28, 2024):
 
 **Test Factories** (`/test/fixtures/entityFactories.ts`):
 
-- ✅ Builder pattern implementation (UserBuilder, BoardBuilder, ListBuilder, CardBuilder)
+- ✅ Builder pattern implementation (UserBuilder, BoardBuilder, ListBuilder, CardBuilder, LabelBuilder, ActivityBuilder)
+- ✅ BoardMember factories (createBoardMember, createOwnerMember, createAdminMember, createRegularMember, createViewerMember)
 - ✅ Method chaining support
 - ✅ Default value configuration and customization capability
 
@@ -1017,29 +1125,31 @@ Current implementation status (as of June 28, 2024):
 
 #### Domain Layer
 
-**Entities (1/7 unimplemented):**
-- 🔄 **BoardMember.test.ts** - Only unimplemented entity test
-- ✅ User, Board, List, Card, Label, Activity - Fully implemented
+**Entities (0/7 unimplemented):**
+
+- ✅ User, Board, List, Card, Label, Activity, BoardMember - **ALL FULLY IMPLEMENTED**
 - 🔄 Checklist, ChecklistItem, Attachment, Comment - Entities themselves not implemented
 
-**Use Cases (11/35 unimplemented):**
-- 🔄 **Label Operations**: CreateLabel, UpdateLabel, DeleteLabel, GetBoardLabels, AddLabelToCard, RemoveLabelFromCard, GetCardLabels (7 use cases)
-- 🔄 **Member Management**: AddBoardMember, RemoveBoardMember, UpdateMemberRole (3 use cases)
+**Use Cases (1/35 unimplemented):**
+
 - 🔄 **User Operations**: GetUserProfile (1 use case - other user operations not implemented)
 
 #### Application Layer (4/5 unimplemented)
+
 - ✅ **BoardValidator** - Fully implemented (create/update/member management validation)
 - 🔄 **AuthValidator, CardValidator, ListValidator, LabelValidator** (4 validators)
 - 🔄 **Controllers**: Unit tests (using mocks)
 - 🔄 **Presenters**: Data transformation logic tests
 
 #### Infrastructure Layer (5/6 unimplemented)
+
 - ✅ **PrismaBoardRepository** - Fully implemented (CRUD, search, member management)
 - 🔄 **PrismaUserRepository, PrismaCardRepository, PrismaListRepository, PrismaLabelRepository, PrismaActivityRepository** (5 repositories)
 - 🔄 **AWS Integration**: Cognito integration tests
 - 🔄 **External Services**: Third-party API integration
 
 #### Interface Layer (4/5 unimplemented)
+
 - ✅ **boardRoutes** - Fully implemented (unit tests + integration tests)
 - 🔄 **authRoutes, cardRoutes, listRoutes, labelRoutes** (4 route groups)
 - 🔄 **Middleware**: Authentication, error handling, rate limiting
@@ -1049,19 +1159,10 @@ Current implementation status (as of June 28, 2024):
 
 ### High Priority: Complete Domain Layer
 
-**Entity Tests** (1 unimplemented entity):
-
-```bash
-src/domain/__tests__/entities/
-└── BoardMember.test.ts    # 🔄 Only unimplemented entity
-```
-
-**Use Case Tests** (11/35 unimplemented):
+**Use Case Tests** (1/35 unimplemented):
 
 ```bash
 src/domain/__tests__/usecases/
-├── labels/          # 7 use cases (unimplemented)
-├── members/         # 3 use cases (unimplemented)
 └── users/           # 1 use case (GetUserProfile)
 ```
 
@@ -1104,8 +1205,21 @@ src/interfaces/__tests__/routes/
 
 ## Recommended Implementation Order
 
-1. **BoardMember Entity Tests** - Follow existing entity patterns
-2. **Missing Use Case Tests** - Reference existing 24 use case test patterns
-3. **Repository Integration Tests** - Reference PrismaBoardRepository patterns
-4. **Validator Tests** - Reference BoardValidator patterns
-5. **API Route Tests** - Reuse boardRoutes patterns
+1. **GetUserProfile Use Case Test** - Complete the last domain use case
+2. **Repository Integration Tests** - Reference PrismaBoardRepository patterns
+3. **Validator Tests** - Reference BoardValidator patterns
+4. **API Route Tests** - Reuse boardRoutes patterns
+
+## Current Achievement Summary
+
+✅ **Domain Layer**: 99% coverage achieved
+- **ALL 7 entities tested** (User, Board, List, Card, Label, Activity, BoardMember)
+- **34/35 use cases implemented** (Board, Card, List, BoardMember, Label operations complete)
+- **Total**: 876+ tests across 37 test files
+
+✅ **Major Milestones Completed**:
+- Complete board collaboration system (member add/remove/role updates)
+- Complete label management system (all CRUD operations + card associations)
+- Comprehensive entity validation and business rules
+- Advanced test patterns (Builder pattern, mocking, integration testing)
+- Full permission and access control testing
