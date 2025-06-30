@@ -4,6 +4,7 @@ import { List } from "@/domain/entities/List";
 import { Card } from "@/domain/entities/Card";
 import { Label } from "@/domain/entities/Label";
 import { Activity, ActivityType, EntityType } from "@/domain/entities/Activity";
+import { BoardMember, BoardRole } from "@/domain/entities/BoardMember";
 import { DEFAULT_PROPS } from "@/test/utils/testHelpers";
 
 let idCounter = 1;
@@ -326,6 +327,49 @@ export class ActivityBuilder {
   build(): Activity {
     return Activity.create(this.props);
   }
+}
+
+// BoardMember factory function (interface, not class)
+export function createBoardMember(overrides: Partial<BoardMember> = {}): BoardMember {
+  return {
+    userId: DEFAULT_PROPS.BOARD_MEMBER.userId,
+    role: DEFAULT_PROPS.BOARD_MEMBER.role,
+    joinedAt: new Date(DEFAULT_PROPS.BOARD_MEMBER.joinedAt), // Create new Date instance
+    ...overrides,
+  };
+}
+
+// Convenience functions for creating BoardMembers with specific roles
+export function createOwnerMember(userId: string, joinedAt?: Date): BoardMember {
+  return createBoardMember({ 
+    userId, 
+    role: 'OWNER',
+    joinedAt: joinedAt || new Date("2024-01-01T00:00:00Z")
+  });
+}
+
+export function createAdminMember(userId: string, joinedAt?: Date): BoardMember {
+  return createBoardMember({ 
+    userId, 
+    role: 'ADMIN',
+    joinedAt: joinedAt || new Date("2024-01-01T00:00:00Z")
+  });
+}
+
+export function createRegularMember(userId: string, joinedAt?: Date): BoardMember {
+  return createBoardMember({ 
+    userId, 
+    role: 'MEMBER',
+    joinedAt: joinedAt || new Date("2024-01-01T00:00:00Z")
+  });
+}
+
+export function createViewerMember(userId: string, joinedAt?: Date): BoardMember {
+  return createBoardMember({ 
+    userId, 
+    role: 'VIEWER',
+    joinedAt: joinedAt || new Date("2024-01-01T00:00:00Z")
+  });
 }
 
 // Legacy functions for backward compatibility (deprecated)

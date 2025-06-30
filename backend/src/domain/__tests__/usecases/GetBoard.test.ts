@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { GetBoardUseCase } from "@/domain/usecases/GetBoard";
 import { BoardRepository } from "@/domain/repositories/BoardRepository";
+import { BoardRole } from "@/domain/entities/Board";
 import { BoardBuilder } from "@/test/fixtures/entityFactories";
 
 describe("GetBoardUseCase", () => {
@@ -53,7 +54,7 @@ describe("GetBoardUseCase", () => {
 
   test("should get board successfully for admin member", async () => {
     const adminUserId = "admin-789";
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("ADMIN"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("ADMIN" as BoardRole));
 
     const request = {
       boardId: testBoardId,
@@ -72,7 +73,7 @@ describe("GetBoardUseCase", () => {
 
   test("should get board successfully for regular member", async () => {
     const memberUserId = "member-789";
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("MEMBER"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("MEMBER" as BoardRole));
 
     const request = {
       boardId: testBoardId,
@@ -91,7 +92,7 @@ describe("GetBoardUseCase", () => {
 
   test("should get board successfully for viewer member", async () => {
     const viewerUserId = "viewer-789";
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("VIEWER"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("VIEWER" as BoardRole));
 
     const request = {
       boardId: testBoardId,
@@ -178,7 +179,7 @@ describe("GetBoardUseCase", () => {
     archivedBoard.archive();
 
     mockBoardRepository.findById = mock(() => Promise.resolve(archivedBoard));
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("OWNER"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("OWNER" as BoardRole));
 
     const request = {
       boardId: testBoardId,
@@ -192,7 +193,7 @@ describe("GetBoardUseCase", () => {
     expect(result.userRole).toBe("OWNER");
   });
 
-  test("should handle archived board access for admin", async () => {
+  test("should deny archived board access for admin", async () => {
     const archivedBoard = BoardBuilder.valid()
       .withTitle("Archived Board")
       .withOwner("other-user")
@@ -201,21 +202,17 @@ describe("GetBoardUseCase", () => {
     archivedBoard.archive();
 
     mockBoardRepository.findById = mock(() => Promise.resolve(archivedBoard));
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("ADMIN"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("ADMIN" as BoardRole));
 
     const request = {
       boardId: testBoardId,
       userId: testUserId,
     };
 
-    const result = await useCase.execute(request);
-
-    expect(result.board).toBeDefined();
-    expect(result.board.isArchived).toBe(true);
-    expect(result.userRole).toBe("ADMIN");
+    expect(useCase.execute(request)).rejects.toThrow("Access denied");
   });
 
-  test("should handle archived board access for member and viewer", async () => {
+  test("should deny archived board access for member and viewer", async () => {
     const archivedBoard = BoardBuilder.valid()
       .withTitle("Archived Board")
       .withOwner("other-user")
@@ -224,18 +221,14 @@ describe("GetBoardUseCase", () => {
     archivedBoard.archive();
 
     mockBoardRepository.findById = mock(() => Promise.resolve(archivedBoard));
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("MEMBER"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("MEMBER" as BoardRole));
 
     const request = {
       boardId: testBoardId,
       userId: testUserId,
     };
 
-    const result = await useCase.execute(request);
-
-    expect(result.board).toBeDefined();
-    expect(result.board.isArchived).toBe(true);
-    expect(result.userRole).toBe("MEMBER");
+    expect(useCase.execute(request)).rejects.toThrow("Access denied");
   });
 
   test("should return VIEWER role when user has no explicit role", async () => {
@@ -281,7 +274,7 @@ describe("GetBoardUseCase", () => {
       .build();
 
     mockBoardRepository.findById = mock(() => Promise.resolve(detailedBoard));
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("OWNER"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("OWNER" as BoardRole));
 
     const request = {
       boardId: testBoardId,
@@ -306,7 +299,7 @@ describe("GetBoardUseCase", () => {
       .build();
 
     mockBoardRepository.findById = mock(() => Promise.resolve(ownedBoard));
-    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("OWNER"));
+    mockBoardRepository.getMemberRole = mock(() => Promise.resolve("OWNER" as BoardRole));
 
     const request = {
       boardId: testBoardId,

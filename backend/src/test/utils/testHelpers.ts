@@ -53,6 +53,11 @@ export const DEFAULT_PROPS = {
     userId: "user-123",
     boardId: "board-123",
   },
+  BOARD_MEMBER: {
+    userId: "user-123",
+    role: "MEMBER" as const,
+    joinedAt: new Date("2024-01-01T00:00:00Z"),
+  },
 };
 
 export async function cleanDatabase(prisma: PrismaClient) {

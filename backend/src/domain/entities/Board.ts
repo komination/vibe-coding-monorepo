@@ -114,6 +114,11 @@ export class Board {
   }
 
   canBeViewedBy(userId: string, role?: BoardRole): boolean {
+    // Archived boards can only be viewed by owners
+    if (this.props.isArchived) {
+      return this.isOwner(userId);
+    }
+    
     if (this.props.isPublic) return true;
     if (this.isOwner(userId)) return true;
     return role !== undefined;
