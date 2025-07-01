@@ -1,0 +1,7 @@
+[install]
+# Enable workspaces
+workspaces = true
+
+[test]
+# Use bun test runner
+root = "."

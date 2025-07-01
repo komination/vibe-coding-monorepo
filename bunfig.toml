@@ -1,0 +1,26 @@
+[install]
+# Enable workspaces for monorepo
+workspaces = true
+# Auto-install peer dependencies
+auto = true
+# Use specific registry
+registry = "https://registry.npmjs.org/"
+# Enable frozen lockfile in production
+frozen = false
+
+[test]
+# Use bun test runner globally
+root = "."
+# Set test timeout
+timeout = 10000
+# Enable coverage
+coverage = true
+
+[build]
+# Build configuration
+target = "node"
+splitting = true
+
+[dev]
+# Development configuration
+hotReload = true
