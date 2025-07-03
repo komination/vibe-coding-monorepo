@@ -1,0 +1,41 @@
+{
+  "name": "@kanban/domain-core",
+  "version": "1.0.0",
+  "description": "Kanban application domain entities and business logic",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "swc src -d dist --copy-files && tsc --emitDeclarationOnly",
+    "build:tsc": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "swc src -d dist --copy-files --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist/**/*",
+    "src/**/*"
+  ],
+  "keywords": [
+    "kanban",
+    "domain",
+    "ddd",
+    "clean-architecture"
+  ],
+  "author": "Kanban Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.10.0",
+    "chokidar": "^4.0.1",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {},
+  "dependencies": {}
+}
