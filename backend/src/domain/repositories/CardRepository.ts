@@ -1,4 +1,4 @@
-import { Card } from '@/domain/entities/Card';
+import { Card } from '@kanban/domain-core';
 
 export interface CardRepository {
   findById(id: string): Promise<Card | null>;

@@ -1,4 +1,4 @@
-import { Label } from '@/domain/entities/Label';
+import { Label } from '@kanban/domain-core';
 
 export interface LabelRepository {
   findById(id: string): Promise<Label | null>;

@@ -1,4 +1,4 @@
-import { List } from '@/domain/entities/List';
+import { List } from '@kanban/domain-core';
 
 export interface ListRepository {
   findById(id: string): Promise<List | null>;

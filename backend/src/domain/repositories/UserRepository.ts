@@ -1,4 +1,4 @@
-import { User } from '@/domain/entities/User';
+import { User } from '@kanban/domain-core';
 
 export interface UserRepository {
   findById(id: string): Promise<User | null>;

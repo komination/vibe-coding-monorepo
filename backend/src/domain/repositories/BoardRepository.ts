@@ -1,10 +1,4 @@
-import { Board, BoardRole } from '@/domain/entities/Board';
-
-export interface BoardMember {
-  userId: string;
-  role: BoardRole;
-  joinedAt: Date;
-}
+import { Board, BoardRole, BoardMember } from '@kanban/domain-core';
 
 export interface BoardRepository {
   findById(id: string): Promise<Board | null>;

@@ -1,4 +1,4 @@
-import { Activity, ActivityType, EntityType } from '@/domain/entities/Activity';
+import { Activity, ActivityType, EntityType } from '@kanban/domain-core';
 
 export interface CreateActivityData {
   type: ActivityType;
