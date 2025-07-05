@@ -1,5 +1,5 @@
 import { Context, Next } from 'hono';
-import { VerifyCognitoTokenUseCase } from '@/domain/usecases/VerifyCognitoToken';
+import { VerifyCognitoTokenUseCase } from '@kanban/use-cases';
 
 // Factory function to create auth middleware with injected dependencies
 export function createAuthMiddleware(verifyCognitoTokenUseCase: VerifyCognitoTokenUseCase) {

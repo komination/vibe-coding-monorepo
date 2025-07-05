@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { cognitoConfig } from '@/infrastructure/config/env';
 
 // Import repositories
 import { UserRepository } from '@kanban/domain-core';
@@ -15,41 +16,41 @@ import { PrismaLabelRepository } from '@/infrastructure/repositories/PrismaLabel
 import { PrismaActivityRepository } from '@/infrastructure/repositories/PrismaActivityRepository';
 
 // Import use cases
-import { VerifyCognitoTokenUseCase } from '@/domain/usecases/VerifyCognitoToken';
-import { SyncCognitoUserUseCase } from '@/domain/usecases/SyncCognitoUser';
-import { GetUserProfileUseCase } from '@/domain/usecases/GetUserProfile';
-import { UpdateUserProfileUseCase } from '@/domain/usecases/UpdateUserProfile';
-import { LogoutUserUseCase } from '@/domain/usecases/LogoutUser';
-import { CreateBoardUseCase } from '@/domain/usecases/CreateBoard';
-import { GetBoardUseCase } from '@/domain/usecases/GetBoard';
-import { UpdateBoardUseCase } from '@/domain/usecases/UpdateBoard';
-import { DeleteBoardUseCase } from '@/domain/usecases/DeleteBoard';
-import { GetUserBoardsUseCase } from '@/domain/usecases/GetUserBoards';
-import { AddBoardMemberUseCase } from '@/domain/usecases/AddBoardMember';
-import { UpdateMemberRoleUseCase } from '@/domain/usecases/UpdateMemberRole';
-import { RemoveBoardMemberUseCase } from '@/domain/usecases/RemoveBoardMember';
-import { CreateCardUseCase } from '@/domain/usecases/CreateCard';
-import { GetCard } from '@/domain/usecases/GetCard';
-import { UpdateCard } from '@/domain/usecases/UpdateCard';
-import { MoveCard } from '@/domain/usecases/MoveCard';
-import { DeleteCard } from '@/domain/usecases/DeleteCard';
-import { GetListCards } from '@/domain/usecases/GetListCards';
-import { ArchiveCard } from '@/domain/usecases/ArchiveCard';
-import { UnarchiveCard } from '@/domain/usecases/UnarchiveCard';
-import { ReorderCards } from '@/domain/usecases/ReorderCards';
-import { CreateListUseCase } from '@/domain/usecases/CreateList';
-import { GetListUseCase } from '@/domain/usecases/GetList';
-import { UpdateListUseCase } from '@/domain/usecases/UpdateList';
-import { DeleteListUseCase } from '@/domain/usecases/DeleteList';
-import { GetBoardListsUseCase } from '@/domain/usecases/GetBoardLists';
-import { ReorderListsUseCase } from '@/domain/usecases/ReorderLists';
-import { CreateLabelUseCase } from '@/domain/usecases/CreateLabel';
-import { GetBoardLabelsUseCase } from '@/domain/usecases/GetBoardLabels';
-import { UpdateLabelUseCase } from '@/domain/usecases/UpdateLabel';
-import { DeleteLabelUseCase } from '@/domain/usecases/DeleteLabel';
-import { AddLabelToCardUseCase } from '@/domain/usecases/AddLabelToCard';
-import { RemoveLabelFromCardUseCase } from '@/domain/usecases/RemoveLabelFromCard';
-import { GetCardLabelsUseCase } from '@/domain/usecases/GetCardLabels';
+import { VerifyCognitoTokenUseCase } from '@kanban/use-cases';
+import { SyncCognitoUserUseCase } from '@kanban/use-cases';
+import { GetUserProfileUseCase } from '@kanban/use-cases';
+import { UpdateUserProfileUseCase } from '@kanban/use-cases';
+import { LogoutUserUseCase } from '@kanban/use-cases';
+import { CreateBoardUseCase } from '@kanban/use-cases';
+import { GetBoardUseCase } from '@kanban/use-cases';
+import { UpdateBoardUseCase } from '@kanban/use-cases';
+import { DeleteBoardUseCase } from '@kanban/use-cases';
+import { GetUserBoardsUseCase } from '@kanban/use-cases';
+import { AddBoardMemberUseCase } from '@kanban/use-cases';
+import { UpdateMemberRoleUseCase } from '@kanban/use-cases';
+import { RemoveBoardMemberUseCase } from '@kanban/use-cases';
+import { CreateCardUseCase } from '@kanban/use-cases';
+import { GetCard } from '@kanban/use-cases';
+import { UpdateCard } from '@kanban/use-cases';
+import { MoveCard } from '@kanban/use-cases';
+import { DeleteCard } from '@kanban/use-cases';
+import { GetListCards } from '@kanban/use-cases';
+import { ArchiveCard } from '@kanban/use-cases';
+import { UnarchiveCard } from '@kanban/use-cases';
+import { ReorderCards } from '@kanban/use-cases';
+import { CreateListUseCase } from '@kanban/use-cases';
+import { GetListUseCase } from '@kanban/use-cases';
+import { UpdateListUseCase } from '@kanban/use-cases';
+import { DeleteListUseCase } from '@kanban/use-cases';
+import { GetBoardListsUseCase } from '@kanban/use-cases';
+import { ReorderListsUseCase } from '@kanban/use-cases';
+import { CreateLabelUseCase } from '@kanban/use-cases';
+import { GetBoardLabelsUseCase } from '@kanban/use-cases';
+import { UpdateLabelUseCase } from '@kanban/use-cases';
+import { DeleteLabelUseCase } from '@kanban/use-cases';
+import { AddLabelToCardUseCase } from '@kanban/use-cases';
+import { RemoveLabelFromCardUseCase } from '@kanban/use-cases';
+import { GetCardLabelsUseCase } from '@kanban/use-cases';
 
 // Import controllers
 import { AuthController } from '@/application/controllers/AuthController';
@@ -134,7 +135,7 @@ export function createContainer(prisma: PrismaClient): Container {
   
   // Create auth use cases
   const logoutUserUseCase = new LogoutUserUseCase();
-  const verifyCognitoTokenUseCase = new VerifyCognitoTokenUseCase(userRepository);
+  const verifyCognitoTokenUseCase = new VerifyCognitoTokenUseCase(userRepository, cognitoConfig);
   const syncCognitoUserUseCase = new SyncCognitoUserUseCase(userRepository);
   const getUserProfileUseCase = new GetUserProfileUseCase(userRepository);
   const updateUserProfileUseCase = new UpdateUserProfileUseCase(userRepository);

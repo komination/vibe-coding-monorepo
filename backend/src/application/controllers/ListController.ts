@@ -1,10 +1,10 @@
 import { Context } from 'hono';
-import { CreateListUseCase } from '@/domain/usecases/CreateList';
-import { GetListUseCase } from '@/domain/usecases/GetList';
-import { UpdateListUseCase } from '@/domain/usecases/UpdateList';
-import { DeleteListUseCase } from '@/domain/usecases/DeleteList';
-import { GetBoardListsUseCase } from '@/domain/usecases/GetBoardLists';
-import { ReorderListsUseCase } from '@/domain/usecases/ReorderLists';
+import { CreateListUseCase } from '@kanban/use-cases';
+import { GetListUseCase } from '@kanban/use-cases';
+import { UpdateListUseCase } from '@kanban/use-cases';
+import { DeleteListUseCase } from '@kanban/use-cases';
+import { GetBoardListsUseCase } from '@kanban/use-cases';
+import { ReorderListsUseCase } from '@kanban/use-cases';
 import { ListValidator } from '@/application/validators/ListValidator';
 import { ListResponseDto } from '@/interfaces/http/dto/ListDto';
 import { List } from '@kanban/domain-core';

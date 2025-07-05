@@ -1,7 +1,7 @@
 import { Context } from 'hono';
-import { LogoutUserUseCase } from '@/domain/usecases/LogoutUser';
-import { GetUserProfileUseCase } from '@/domain/usecases/GetUserProfile';
-import { UpdateUserProfileUseCase } from '@/domain/usecases/UpdateUserProfile';
+import { LogoutUserUseCase } from '@kanban/use-cases';
+import { GetUserProfileUseCase } from '@kanban/use-cases';
+import { UpdateUserProfileUseCase } from '@kanban/use-cases';
 import { AuthValidator } from '@/application/validators/AuthValidator';
 import { UserResponseDto } from '@/interfaces/http/dto/UserDto';
 import { User } from '@kanban/domain-core';
