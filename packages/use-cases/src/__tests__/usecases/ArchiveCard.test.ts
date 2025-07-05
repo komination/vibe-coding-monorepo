@@ -8,7 +8,7 @@ import { ListRepository } from "@kanban/domain-core";
 import { ActivityRepository } from "@kanban/domain-core";
 
 import type { BoardRole } from "@kanban/domain-core";
-import { UserBuilder, BoardBuilder, ListBuilder, CardBuilder, LabelBuilder } from "../../test/fixtures/entityFactories";
+import { UserBuilder, BoardBuilder, ListBuilder, CardBuilder } from "../../test/fixtures/entityFactories";
 
 describe("ArchiveCard", () => {
   let useCase: ArchiveCard;

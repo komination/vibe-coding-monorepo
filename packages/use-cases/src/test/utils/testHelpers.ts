@@ -1,3 +1,5 @@
+import { ActivityType, EntityType } from "@kanban/domain-core";
+
 export const DEFAULT_TEST_DATE = new Date("2024-01-01T00:00:00Z");
 
 export const DEFAULT_PROPS = {
@@ -31,8 +33,8 @@ export const DEFAULT_PROPS = {
     boardId: "board-123",
   },
   ACTIVITY: {
-    action: "CREATE" as const,
-    entityType: "CARD" as const,
+    action: "CREATE" as ActivityType,
+    entityType: "CARD" as EntityType,
     entityId: "entity-123",
     entityTitle: "Test Entity",
     userId: "user-123",

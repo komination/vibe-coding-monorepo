@@ -4,10 +4,8 @@ import { List } from "@kanban/domain-core";
 import { Card } from "@kanban/domain-core";
 import { Label } from "@kanban/domain-core";
 import { Activity, ActivityType, EntityType } from "@kanban/domain-core";
-import { BoardMember, BoardRole } from "@kanban/domain-core";
+import { BoardMember } from "@kanban/domain-core";
 import { DEFAULT_PROPS } from "../utils/testHelpers";
-
-let idCounter = 1;
 
 export class UserBuilder {
   private props = { ...DEFAULT_PROPS.USER };
@@ -246,12 +244,12 @@ export class ActivityBuilder {
   }
 
   withAction(action: ActivityType): ActivityBuilder {
-    this.props.action = action;
+    this.props = { ...this.props, action };
     return this;
   }
 
   withEntityType(entityType: EntityType): ActivityBuilder {
-    this.props.entityType = entityType;
+    this.props = { ...this.props, entityType };
     return this;
   }
 
