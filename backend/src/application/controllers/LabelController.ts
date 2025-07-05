@@ -8,7 +8,7 @@ import { RemoveLabelFromCardUseCase } from '@/domain/usecases/RemoveLabelFromCar
 import { GetCardLabelsUseCase } from '@/domain/usecases/GetCardLabels';
 import { LabelValidator } from '@/application/validators/LabelValidator';
 import { LabelResponseDto } from '@/interfaces/http/dto/LabelDto';
-import { Label } from '@/domain/entities/Label';
+import { Label } from '@kanban/domain-core';
 
 export class LabelController {
   constructor(

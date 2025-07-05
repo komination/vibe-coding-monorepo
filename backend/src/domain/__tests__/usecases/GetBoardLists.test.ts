@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { GetBoardListsUseCase } from "@/domain/usecases/GetBoardLists";
-import { ListRepository } from "@/domain/repositories/ListRepository";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
+import { ListRepository } from "@kanban/domain-core";
+import { BoardRepository } from "@kanban/domain-core";
 import { BoardBuilder, ListBuilder } from "@/test/fixtures/entityFactories";
 
 describe("GetBoardListsUseCase", () => {

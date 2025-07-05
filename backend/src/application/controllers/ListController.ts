@@ -7,7 +7,7 @@ import { GetBoardListsUseCase } from '@/domain/usecases/GetBoardLists';
 import { ReorderListsUseCase } from '@/domain/usecases/ReorderLists';
 import { ListValidator } from '@/application/validators/ListValidator';
 import { ListResponseDto } from '@/interfaces/http/dto/ListDto';
-import { List } from '@/domain/entities/List';
+import { List } from '@kanban/domain-core';
 
 export class ListController {
   constructor(

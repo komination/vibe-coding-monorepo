@@ -1,6 +1,6 @@
 import { jwtVerify, createRemoteJWKSet, errors } from 'jose';
-import { User } from '@/domain/entities/User';
-import { UserRepository } from '@/domain/repositories/UserRepository';
+import { User } from '@kanban/domain-core';
+import { UserRepository } from '@kanban/domain-core';
 import { cognitoConfig } from '@/infrastructure/config/env';
 
 export interface VerifyCognitoTokenRequest {

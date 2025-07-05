@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { Activity, ActivityType, EntityType } from '@/domain/entities/Activity';
-import { ActivityRepository, CreateActivityData } from '@/domain/repositories/ActivityRepository';
+import { Activity, ActivityType, EntityType } from '@kanban/domain-core';
+import { ActivityRepository, CreateActivityData } from '@kanban/domain-core';
 
 export class PrismaActivityRepository implements ActivityRepository {
   constructor(private prisma: PrismaClient) {}

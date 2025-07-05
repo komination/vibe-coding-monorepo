@@ -1,8 +1,8 @@
-import { Card } from "@/domain/entities/Card";
-import { UserRepository } from "@/domain/repositories/UserRepository";
-import { CardRepository } from "@/domain/repositories/CardRepository";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
-import { ListRepository } from "@/domain/repositories/ListRepository";
+import { Card } from "@kanban/domain-core";
+import { UserRepository } from "@kanban/domain-core";
+import { CardRepository } from "@kanban/domain-core";
+import { BoardRepository } from "@kanban/domain-core";
+import { ListRepository } from "@kanban/domain-core";
 
 export class GetListCards {
   constructor(

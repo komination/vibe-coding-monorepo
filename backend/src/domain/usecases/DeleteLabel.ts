@@ -1,7 +1,7 @@
-import { LabelRepository } from '@/domain/repositories/LabelRepository';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
-import { ActivityRepository } from '@/domain/repositories/ActivityRepository';
-import { Activity } from '@/domain/entities/Activity';
+import { LabelRepository } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
+import { ActivityRepository } from '@kanban/domain-core';
+import { Activity } from '@kanban/domain-core';
 
 export interface DeleteLabelRequest {
   labelId: string;

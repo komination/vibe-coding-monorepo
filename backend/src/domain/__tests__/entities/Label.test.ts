@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { Label } from "@/domain/entities/Label";
+import { Label } from "@kanban/domain-core";
 import { mockDate, UUID_REGEX, DEFAULT_TEST_DATE } from "@/test/utils/testHelpers";
 
 describe("Label Entity", () => {

@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { GetBoardLabelsUseCase } from "@/domain/usecases/GetBoardLabels";
-import { LabelRepository } from "@/domain/repositories/LabelRepository";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
-import { Board, BoardRole } from "@/domain/entities/Board";
-import { Label } from "@/domain/entities/Label";
+import { LabelRepository } from "@kanban/domain-core";
+import { BoardRepository } from "@kanban/domain-core";
+import { Board, BoardRole } from "@kanban/domain-core";
+import { Label } from "@kanban/domain-core";
 
 describe("GetBoardLabelsUseCase", () => {
   let useCase: GetBoardLabelsUseCase;

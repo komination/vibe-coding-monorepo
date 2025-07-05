@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { UpdateListUseCase } from "@/domain/usecases/UpdateList";
-import { List } from "@/domain/entities/List";
-import { ListRepository } from "@/domain/repositories/ListRepository";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
-import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
+import { List } from "@kanban/domain-core";
+import { ListRepository } from "@kanban/domain-core";
+import { BoardRepository } from "@kanban/domain-core";
+import { ActivityRepository } from "@kanban/domain-core";
 import { UserBuilder, BoardBuilder, ListBuilder } from "@/test/fixtures/entityFactories";
 import { BoardRole } from "@prisma/client";
 

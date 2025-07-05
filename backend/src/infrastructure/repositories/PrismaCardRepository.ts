@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { Card } from '@/domain/entities/Card';
-import { CardRepository } from '@/domain/repositories/CardRepository';
+import { Card } from '@kanban/domain-core';
+import { CardRepository } from '@kanban/domain-core';
 
 export class PrismaCardRepository implements CardRepository {
   constructor(private prisma: PrismaClient) {}

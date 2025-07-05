@@ -1,13 +1,13 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { GetCardLabelsUseCase } from "@/domain/usecases/GetCardLabels";
-import { LabelRepository } from "@/domain/repositories/LabelRepository";
-import { CardRepository } from "@/domain/repositories/CardRepository";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
-import { ListRepository } from "@/domain/repositories/ListRepository";
-import { Board, BoardRole } from "@/domain/entities/Board";
-import { Label } from "@/domain/entities/Label";
-import { Card } from "@/domain/entities/Card";
-import { List } from "@/domain/entities/List";
+import { LabelRepository } from "@kanban/domain-core";
+import { CardRepository } from "@kanban/domain-core";
+import { BoardRepository } from "@kanban/domain-core";
+import { ListRepository } from "@kanban/domain-core";
+import { Board, BoardRole } from "@kanban/domain-core";
+import { Label } from "@kanban/domain-core";
+import { Card } from "@kanban/domain-core";
+import { List } from "@kanban/domain-core";
 
 describe("GetCardLabelsUseCase", () => {
   let useCase: GetCardLabelsUseCase;

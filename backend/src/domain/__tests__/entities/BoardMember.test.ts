@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { BoardMember, BoardRole } from "@/domain/entities/BoardMember";
+import { BoardMember, BoardRole } from "@kanban/domain-core";
 import { mockDate, UUID_REGEX, DEFAULT_TEST_DATE } from "@/test/utils/testHelpers";
 import { 
   createBoardMember, 

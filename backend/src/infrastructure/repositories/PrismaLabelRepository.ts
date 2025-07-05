@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { Label } from '@/domain/entities/Label';
-import { LabelRepository } from '@/domain/repositories/LabelRepository';
+import { Label } from '@kanban/domain-core';
+import { LabelRepository } from '@kanban/domain-core';
 
 export class PrismaLabelRepository implements LabelRepository {
   constructor(private prisma: PrismaClient) {}

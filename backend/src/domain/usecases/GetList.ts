@@ -1,6 +1,6 @@
-import { List } from '@/domain/entities/List';
-import { ListRepository } from '@/domain/repositories/ListRepository';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
+import { List } from '@kanban/domain-core';
+import { ListRepository } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
 
 export interface GetListRequest {
   listId: string;

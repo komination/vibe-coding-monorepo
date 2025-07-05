@@ -1,10 +1,10 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { DeleteCard } from "@/domain/usecases/DeleteCard";
-import { CardRepository } from "@/domain/repositories/CardRepository";
-import { UserRepository } from "@/domain/repositories/UserRepository";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
-import { ListRepository } from "@/domain/repositories/ListRepository";
-import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
+import { CardRepository } from "@kanban/domain-core";
+import { UserRepository } from "@kanban/domain-core";
+import { BoardRepository } from "@kanban/domain-core";
+import { ListRepository } from "@kanban/domain-core";
+import { ActivityRepository } from "@kanban/domain-core";
 import { UserBuilder, BoardBuilder, ListBuilder, CardBuilder } from "@/test/fixtures/entityFactories";
 import { BoardRole } from "@prisma/client";
 

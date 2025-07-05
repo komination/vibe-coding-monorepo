@@ -10,7 +10,7 @@ import { UnarchiveCard } from '@/domain/usecases/UnarchiveCard';
 import { ReorderCards } from '@/domain/usecases/ReorderCards';
 import { CardValidator } from '@/application/validators/CardValidator';
 import { CardResponseDto, CardListResponseDto } from '@/interfaces/http/dto/CardDto';
-import { Card } from '@/domain/entities/Card';
+import { Card } from '@kanban/domain-core';
 
 export class CardController {
   constructor(

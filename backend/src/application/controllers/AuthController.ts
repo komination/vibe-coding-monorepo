@@ -4,7 +4,7 @@ import { GetUserProfileUseCase } from '@/domain/usecases/GetUserProfile';
 import { UpdateUserProfileUseCase } from '@/domain/usecases/UpdateUserProfile';
 import { AuthValidator } from '@/application/validators/AuthValidator';
 import { UserResponseDto } from '@/interfaces/http/dto/UserDto';
-import { User } from '@/domain/entities/User';
+import { User } from '@kanban/domain-core';
 
 export class AuthController {
   constructor(

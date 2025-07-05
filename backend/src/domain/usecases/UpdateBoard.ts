@@ -1,7 +1,7 @@
-import { Board } from '@/domain/entities/Board';
-import { Activity } from '@/domain/entities/Activity';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
-import { ActivityRepository } from '@/domain/repositories/ActivityRepository';
+import { Board } from '@kanban/domain-core';
+import { Activity } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
+import { ActivityRepository } from '@kanban/domain-core';
 
 export interface UpdateBoardRequest {
   boardId: string;

@@ -9,7 +9,7 @@ import { UpdateMemberRoleUseCase } from '@/domain/usecases/UpdateMemberRole';
 import { RemoveBoardMemberUseCase } from '@/domain/usecases/RemoveBoardMember';
 import { BoardValidator } from '@/application/validators/BoardValidator';
 import { BoardResponseDto } from '@/interfaces/http/dto/BoardDto';
-import { Board } from '@/domain/entities/Board';
+import { Board } from '@kanban/domain-core';
 
 export class BoardController {
   constructor(

@@ -1,10 +1,10 @@
-import { User } from "@/domain/entities/User";
-import { Board } from "@/domain/entities/Board";
-import { List } from "@/domain/entities/List";
-import { Card } from "@/domain/entities/Card";
-import { Label } from "@/domain/entities/Label";
-import { Activity, ActivityType, EntityType } from "@/domain/entities/Activity";
-import { BoardMember, BoardRole } from "@/domain/entities/BoardMember";
+import { User } from "@kanban/domain-core";
+import { Board } from "@kanban/domain-core";
+import { List } from "@kanban/domain-core";
+import { Card } from "@kanban/domain-core";
+import { Label } from "@kanban/domain-core";
+import { Activity, ActivityType, EntityType } from "@kanban/domain-core";
+import { BoardMember, BoardRole } from "@kanban/domain-core";
 import { DEFAULT_PROPS } from "@/test/utils/testHelpers";
 
 let idCounter = 1;

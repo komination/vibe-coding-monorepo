@@ -1,5 +1,5 @@
-import { Board } from '@/domain/entities/Board';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
+import { Board } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
 
 export interface GetBoardRequest {
   boardId: string;

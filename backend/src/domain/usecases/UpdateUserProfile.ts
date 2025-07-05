@@ -1,5 +1,5 @@
-import { UserRepository } from '@/domain/repositories/UserRepository';
-import { User } from '@/domain/entities/User';
+import { UserRepository } from '@kanban/domain-core';
+import { User } from '@kanban/domain-core';
 
 export interface UpdateUserProfileRequest {
   userId: string;

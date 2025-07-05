@@ -1,8 +1,8 @@
-import { List } from '@/domain/entities/List';
-import { Activity } from '@/domain/entities/Activity';
-import { ListRepository } from '@/domain/repositories/ListRepository';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
-import { ActivityRepository } from '@/domain/repositories/ActivityRepository';
+import { List } from '@kanban/domain-core';
+import { Activity } from '@kanban/domain-core';
+import { ListRepository } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
+import { ActivityRepository } from '@kanban/domain-core';
 
 export interface UpdateListRequest {
   listId: string;

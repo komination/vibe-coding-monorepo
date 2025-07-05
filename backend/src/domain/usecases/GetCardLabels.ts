@@ -1,8 +1,8 @@
-import { Label } from '@/domain/entities/Label';
-import { LabelRepository } from '@/domain/repositories/LabelRepository';
-import { CardRepository } from '@/domain/repositories/CardRepository';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
-import { ListRepository } from '@/domain/repositories/ListRepository';
+import { Label } from '@kanban/domain-core';
+import { LabelRepository } from '@kanban/domain-core';
+import { CardRepository } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
+import { ListRepository } from '@kanban/domain-core';
 
 export interface GetCardLabelsRequest {
   cardId: string;

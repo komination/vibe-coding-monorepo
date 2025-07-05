@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { User } from "@/domain/entities/User";
+import { User } from "@kanban/domain-core";
 import { mockDate, UUID_REGEX, DEFAULT_TEST_DATE } from "@/test/utils/testHelpers";
 import { UserBuilder } from "@/test/fixtures/entityFactories";
 

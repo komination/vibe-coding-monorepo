@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { List } from '@/domain/entities/List';
-import { ListRepository } from '@/domain/repositories/ListRepository';
+import { List } from '@kanban/domain-core';
+import { ListRepository } from '@kanban/domain-core';
 
 export class PrismaListRepository implements ListRepository {
   constructor(private prisma: PrismaClient) {}

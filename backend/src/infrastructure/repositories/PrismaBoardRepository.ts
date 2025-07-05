@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { Board, BoardRole } from '@/domain/entities/Board';
-import { BoardRepository, BoardMember } from '@/domain/repositories/BoardRepository';
+import { Board, BoardRole } from '@kanban/domain-core';
+import { BoardRepository, BoardMember } from '@kanban/domain-core';
 
 export class PrismaBoardRepository implements BoardRepository {
   constructor(private prisma: PrismaClient) {}

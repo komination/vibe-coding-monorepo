@@ -1,9 +1,9 @@
-import { Card } from '@/domain/entities/Card';
-import { Activity } from '@/domain/entities/Activity';
-import { CardRepository } from '@/domain/repositories/CardRepository';
-import { ListRepository } from '@/domain/repositories/ListRepository';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
-import { ActivityRepository } from '@/domain/repositories/ActivityRepository';
+import { Card } from '@kanban/domain-core';
+import { Activity } from '@kanban/domain-core';
+import { CardRepository } from '@kanban/domain-core';
+import { ListRepository } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
+import { ActivityRepository } from '@kanban/domain-core';
 
 export interface CreateCardRequest {
   title: string;

@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 
 // Import repositories
-import { UserRepository } from '@/domain/repositories/UserRepository';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
-import { CardRepository } from '@/domain/repositories/CardRepository';
-import { ListRepository } from '@/domain/repositories/ListRepository';
-import { LabelRepository } from '@/domain/repositories/LabelRepository';
-import { ActivityRepository } from '@/domain/repositories/ActivityRepository';
+import { UserRepository } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
+import { CardRepository } from '@kanban/domain-core';
+import { ListRepository } from '@kanban/domain-core';
+import { LabelRepository } from '@kanban/domain-core';
+import { ActivityRepository } from '@kanban/domain-core';
 import { PrismaUserRepository } from '@/infrastructure/repositories/PrismaUserRepository';
 import { PrismaBoardRepository } from '@/infrastructure/repositories/PrismaBoardRepository';
 import { PrismaCardRepository } from '@/infrastructure/repositories/PrismaCardRepository';

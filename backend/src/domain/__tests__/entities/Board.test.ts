@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { Board } from "@/domain/entities/Board";
+import { Board } from "@kanban/domain-core";
 import { mockDate, UUID_REGEX, DEFAULT_TEST_DATE } from "@/test/utils/testHelpers";
 import { BoardBuilder } from "@/test/fixtures/entityFactories";
 

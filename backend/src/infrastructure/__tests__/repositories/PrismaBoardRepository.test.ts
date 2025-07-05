@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach } from "bun:test";
 import { PrismaBoardRepository } from "@/infrastructure/repositories/PrismaBoardRepository";
 import { prismaTest } from "@/test/setup";
-import { Board } from "@/domain/entities/Board";
+import { Board } from "@kanban/domain-core";
 import { BoardRole } from "@prisma/client";
 
 describe("PrismaBoardRepository", () => {

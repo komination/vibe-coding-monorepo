@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { AddBoardMemberUseCase } from "@/domain/usecases/AddBoardMember";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
-import { UserRepository } from "@/domain/repositories/UserRepository";
-import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
+import { BoardRepository } from "@kanban/domain-core";
+import { UserRepository } from "@kanban/domain-core";
+import { ActivityRepository } from "@kanban/domain-core";
 import { createMockUser, BoardBuilder, createRegularMember, createBoardMember } from "@/test/fixtures/entityFactories";
 
 describe("AddBoardMemberUseCase", () => {

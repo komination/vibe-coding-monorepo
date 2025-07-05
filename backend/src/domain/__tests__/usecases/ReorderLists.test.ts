@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach, mock } from "bun:test";
 import { ReorderListsUseCase } from "@/domain/usecases/ReorderLists";
-import { ListRepository } from "@/domain/repositories/ListRepository";
-import { BoardRepository } from "@/domain/repositories/BoardRepository";
-import { ActivityRepository } from "@/domain/repositories/ActivityRepository";
+import { ListRepository } from "@kanban/domain-core";
+import { BoardRepository } from "@kanban/domain-core";
+import { ActivityRepository } from "@kanban/domain-core";
 import { UserBuilder, BoardBuilder, ListBuilder } from "@/test/fixtures/entityFactories";
 import { BoardRole } from "@prisma/client";
 

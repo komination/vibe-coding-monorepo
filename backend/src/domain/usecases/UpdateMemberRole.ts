@@ -1,8 +1,8 @@
-import { BoardMember, BoardRole } from '@/domain/entities/BoardMember';
-import { Activity } from '@/domain/entities/Activity';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
-import { UserRepository } from '@/domain/repositories/UserRepository';
-import { ActivityRepository } from '@/domain/repositories/ActivityRepository';
+import { BoardMember, BoardRole } from '@kanban/domain-core';
+import { Activity } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
+import { UserRepository } from '@kanban/domain-core';
+import { ActivityRepository } from '@kanban/domain-core';
 
 export interface UpdateMemberRoleRequest {
   boardId: string;

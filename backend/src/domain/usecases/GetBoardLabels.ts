@@ -1,6 +1,6 @@
-import { Label } from '@/domain/entities/Label';
-import { LabelRepository } from '@/domain/repositories/LabelRepository';
-import { BoardRepository } from '@/domain/repositories/BoardRepository';
+import { Label } from '@kanban/domain-core';
+import { LabelRepository } from '@kanban/domain-core';
+import { BoardRepository } from '@kanban/domain-core';
 
 export interface GetBoardLabelsRequest {
   boardId: string;
