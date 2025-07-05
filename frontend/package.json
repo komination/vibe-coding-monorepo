@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev --port 4001",
-    "build": "bun --bun next build",
-    "start": "bun --bun next start",
-    "lint": "bun --bun next lint",
+    "dev": "next dev --port 4001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "clean": "rm -rf .next"
   },
   "dependencies": {
