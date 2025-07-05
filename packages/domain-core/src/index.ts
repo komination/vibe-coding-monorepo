@@ -15,7 +15,7 @@ export * from './repositories/ListRepository';
 export * from './repositories/UserRepository';
 
 // Types
-export type { BoardMember, CreateBoardMemberData, UpdateBoardMemberData } from './types/BoardMember';
+export type { BoardRole, BoardMember, CreateBoardMemberData, UpdateBoardMemberData } from './types/BoardMember';
 
 // Errors
 export * from './errors/DomainError';

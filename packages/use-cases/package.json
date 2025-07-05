@@ -1,0 +1,31 @@
+{
+  "name": "@kanban/use-cases",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "swc src -d dist && tsc --emitDeclarationOnly",
+    "clean": "rm -rf dist",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage"
+  },
+  "dependencies": {
+    "@kanban/domain-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@prisma/client": "^6.10.0",
+    "@swc/cli": "^0.7.7",
+    "@swc/core": "^1.12.9",
+    "@types/bun": "^1.1.18",
+    "bun-types": "^1.2.16",
+    "typescript": "^5.8.3"
+  }
+}
