@@ -1,4 +1,4 @@
-import { Activity, ActivityType, EntityType } from '../entities/Activity';
+import { Activity, ActivityType, EntityType } from '../../entities/Activity';
 
 export interface CreateActivityData {
   type: ActivityType;

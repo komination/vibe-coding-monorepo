@@ -1,5 +1,5 @@
-import { Board, BoardRole } from '../entities/Board';
-import { BoardMember } from '../types/BoardMember';
+import { Board, BoardRole } from '../../entities/Board';
+import { BoardMember } from '../BoardMember';
 
 export interface BoardRepository {
   findById(id: string): Promise<Board | null>;

@@ -7,12 +7,12 @@ export * from './entities/List';
 export * from './entities/User';
 
 // Repositories
-export * from './repositories/ActivityRepository';
-export * from './repositories/BoardRepository';
-export * from './repositories/CardRepository';
-export * from './repositories/LabelRepository';
-export * from './repositories/ListRepository';
-export * from './repositories/UserRepository';
+export * from './types/repositories/ActivityRepository';
+export * from './types/repositories/BoardRepository';
+export * from './types/repositories/CardRepository';
+export * from './types/repositories/LabelRepository';
+export * from './types/repositories/ListRepository';
+export * from './types/repositories/UserRepository';
 
 // Types
 export type { BoardRole, BoardMember, CreateBoardMemberData, UpdateBoardMemberData } from './types/BoardMember';
