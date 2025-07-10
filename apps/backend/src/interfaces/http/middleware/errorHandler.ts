@@ -8,7 +8,7 @@ import {
   ForbiddenError,
   ConflictError,
   BusinessRuleViolationError
-} from '@/domain/errors/DomainError';
+} from '@kanban/domain-core';
 import {
   ApplicationError,
   BadRequestError,
