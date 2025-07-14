@@ -2,8 +2,7 @@
   "name": "kanban-monorepo",
   "private": true,
   "workspaces": [
-    "frontend",
-    "backend",
+    "apps/*",
     "packages/*"
   ],
   "scripts": {
@@ -11,7 +10,6 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "clean": "turbo clean",
-    "install": "bun install",
     "test": "turbo test"
   },
   "devDependencies": {
