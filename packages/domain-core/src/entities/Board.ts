@@ -80,6 +80,11 @@ export class Board {
     this.props.updatedAt = new Date();
   }
 
+  updateBackgroundUrl(backgroundUrl?: string): void {
+    this.props.backgroundUrl = backgroundUrl;
+    this.props.updatedAt = new Date();
+  }
+
   makePublic(): void {
     this.props.isPublic = true;
     this.props.updatedAt = new Date();
@@ -122,6 +127,18 @@ export class Board {
     if (this.props.isPublic) return true;
     if (this.isOwner(userId)) return true;
     return role !== undefined;
+  }
+
+  canEdit(userId: string): boolean {
+    return this.isOwner(userId);
+  }
+
+  canView(userId: string): boolean {
+    if (this.props.isArchived) {
+      return this.isOwner(userId);
+    }
+    if (this.props.isPublic) return true;
+    return this.isOwner(userId);
   }
 
   toJSON(): BoardProps {

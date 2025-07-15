@@ -19,3 +19,5 @@ export type { BoardRole, BoardMember, CreateBoardMemberData, UpdateBoardMemberDa
 
 // Errors
 export * from './errors/DomainError';
+
+// Test utilities (for internal packages only) - moved to consumer packages

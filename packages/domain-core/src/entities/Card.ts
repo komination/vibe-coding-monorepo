@@ -124,6 +124,25 @@ export class Card {
     this.props.updatedAt = new Date();
   }
 
+  unassign(): void {
+    this.props.assigneeId = undefined;
+    this.props.updatedAt = new Date();
+  }
+
+  setDueDate(dueDate: Date): void {
+    this.props.dueDate = dueDate;
+    this.props.updatedAt = new Date();
+  }
+
+  clearDueDate(): void {
+    this.props.dueDate = undefined;
+    this.props.updatedAt = new Date();
+  }
+
+  hasAssignee(): boolean {
+    return this.props.assigneeId !== undefined;
+  }
+
   archive(): void {
     this.props.isArchived = true;
     this.props.updatedAt = new Date();
