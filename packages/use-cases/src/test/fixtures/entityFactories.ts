@@ -1,14 +1,72 @@
-import { User } from "@kanban/domain-core";
-import { Board } from "@kanban/domain-core";
-import { List } from "@kanban/domain-core";
-import { Card } from "@kanban/domain-core";
-import { Label } from "@kanban/domain-core";
-import { Activity, ActivityType, EntityType } from "@kanban/domain-core";
-import { BoardMember } from "@kanban/domain-core";
-import { DEFAULT_PROPS } from "../utils/testHelpers";
+import { User, Board, List, Card, Label, Activity, ActivityType, EntityType, BoardRole } from "@kanban/domain-core";
+
+let idCounter = 1;
+
+// Generate unique test data to avoid conflicts
+function generateUniqueId(): string {
+  return `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+function generateUniqueEmail(): string {
+  return `test-${generateUniqueId()}@example.com`;
+}
+
+function generateUniqueUsername(): string {
+  return `testuser-${generateUniqueId()}`;
+}
+
+function generateUniqueCognitoSub(): string {
+  return `cognito-${generateUniqueId()}`;
+}
+
+// Default test props for use-cases
+const DEFAULT_PROPS = {
+  USER: {
+    email: generateUniqueEmail(),
+    username: generateUniqueUsername(),
+    cognitoSub: generateUniqueCognitoSub(),
+    isActive: true,
+  },
+  BOARD: {
+    title: "Test Board",
+    isPublic: false,
+    isArchived: false,
+    ownerId: "user-123",
+  },
+  LIST: {
+    title: "Test List",
+    position: 1000,
+    boardId: "board-123",
+  },
+  CARD: {
+    title: "Test Card",
+    position: 1000,
+    isArchived: false,
+    listId: "list-123",
+    creatorId: "user-123",
+  },
+  LABEL: {
+    name: "Test Label",
+    color: "#0079BF",
+    boardId: "board-123",
+  },
+  ACTIVITY: {
+    action: "CREATE" as ActivityType,
+    entityType: "CARD" as EntityType,
+    entityId: "entity-123",
+    entityTitle: "Test Entity",
+    userId: "user-123",
+    boardId: "board-123",
+  },
+};
 
 export class UserBuilder {
-  private props = { ...DEFAULT_PROPS.USER };
+  private props = { 
+    ...DEFAULT_PROPS.USER,
+    email: generateUniqueEmail(),
+    username: generateUniqueUsername(),
+    cognitoSub: generateUniqueCognitoSub()
+  };
 
   static valid(): UserBuilder {
     return new UserBuilder();
@@ -244,12 +302,12 @@ export class ActivityBuilder {
   }
 
   withAction(action: ActivityType): ActivityBuilder {
-    this.props = { ...this.props, action };
+    this.props.action = action;
     return this;
   }
 
   withEntityType(entityType: EntityType): ActivityBuilder {
-    this.props = { ...this.props, entityType };
+    this.props.entityType = entityType;
     return this;
   }
 
@@ -283,17 +341,51 @@ export class ActivityBuilder {
     return this;
   }
 
+  // Convenience methods for common activity types
+  createCard(cardId: string, cardTitle: string): ActivityBuilder {
+    return this.withAction("CREATE")
+      .withEntityType("CARD")
+      .withEntityId(cardId)
+      .withEntityTitle(cardTitle)
+      .forCard(cardId);
+  }
+
+  updateCard(cardId: string, cardTitle: string): ActivityBuilder {
+    return this.withAction("UPDATE")
+      .withEntityType("CARD")
+      .withEntityId(cardId)
+      .withEntityTitle(cardTitle)
+      .forCard(cardId);
+  }
+
+  moveCard(cardId: string, cardTitle: string): ActivityBuilder {
+    return this.withAction("MOVE")
+      .withEntityType("CARD")
+      .withEntityId(cardId)
+      .withEntityTitle(cardTitle)
+      .forCard(cardId);
+  }
+
+  createBoard(boardId: string, boardTitle: string): ActivityBuilder {
+    return this.withAction("CREATE")
+      .withEntityType("BOARD")
+      .withEntityId(boardId)
+      .withEntityTitle(boardTitle);
+  }
+
+  addMember(boardId: string, boardTitle: string): ActivityBuilder {
+    return this.withAction("ADD_MEMBER")
+      .withEntityType("BOARD")
+      .withEntityId(boardId)
+      .withEntityTitle(boardTitle);
+  }
+
   build(): Activity {
     return Activity.create(this.props);
   }
 }
 
-// BoardMember factory function (interface, not class)
-export function createBoardMember(overrides: Partial<BoardMember> = {}): BoardMember {
-  return {
-    userId: DEFAULT_PROPS.BOARD_MEMBER.userId,
-    role: DEFAULT_PROPS.BOARD_MEMBER.role,
-    joinedAt: new Date(DEFAULT_PROPS.BOARD_MEMBER.joinedAt), // Create new Date instance
-    ...overrides,
-  };
+// Reset counter utility for tests
+export function resetIdCounter() {
+  idCounter = 1;
 }
