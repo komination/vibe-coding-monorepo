@@ -19,11 +19,19 @@ export async function mockAuthMiddleware(c: Context, next: Next) {
   // Get or create test user based on token
   let user;
   if (token === "test-token") {
+    // For legacy test-token, look for a user with a specific marker
     user = await prismaTest.user.findFirst({
-      where: { email: "test@example.com" },
+      where: { 
+        OR: [
+          { name: "Test User" },
+          { username: { startsWith: "testuser" } }
+        ]
+      },
+      orderBy: { createdAt: 'asc' } // Use first created test user
     });
   } else {
     // Allow custom user tokens for testing different scenarios
+    // Use the token directly as cognitoSub
     user = await prismaTest.user.findFirst({
       where: { cognitoSub: token },
     });

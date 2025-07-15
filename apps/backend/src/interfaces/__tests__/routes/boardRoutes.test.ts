@@ -5,6 +5,7 @@ import { prismaTest } from "@/test/setup";
 import { createContainer } from "@/infrastructure/di/container";
 import { mockAuthMiddleware } from "@/test/utils/mockAuth";
 import { BoardRole } from "@prisma/client";
+import { UserBuilder } from "@/test/fixtures/entityFactories";
 
 describe("Board Routes", () => {
   let app: Hono;
@@ -23,19 +24,32 @@ describe("Board Routes", () => {
     app.use("*", mockAuthMiddleware);
     app.route("/boards", createBoardRoutes(container.boardController, container.listController));
 
-    // Create test user
-    testUser = await prismaTest.user.create({
-      data: {
-        cognitoSub: "test-cognito-id",
-        email: "test@example.com",
-        username: "testuser",
+    // Create unique test user with fixed cognito sub for auth
+    const userBuilder = UserBuilder.valid();
+    const userData = userBuilder.build();
+    
+    testUser = await prismaTest.user.upsert({
+      where: { cognitoSub: "test-user-unit-cognito-sub" },
+      update: {},
+      create: {
+        cognitoSub: "test-user-unit-cognito-sub",
+        email: userData.email,
+        username: userData.username,
         name: "Test User",
         isActive: true,
       },
     });
+    
+    // Clean up any existing data for this user
+    await prismaTest.boardMember.deleteMany({
+      where: { userId: testUser.id },
+    });
+    await prismaTest.board.deleteMany({
+      where: { ownerId: testUser.id },
+    });
 
     // Mock auth token (in real tests, you'd use a proper JWT)
-    authToken = "Bearer test-token";
+    authToken = "Bearer test-user-unit-cognito-sub";
   });
 
   describe("POST /boards", () => {
@@ -126,12 +140,15 @@ describe("Board Routes", () => {
 
     test("should include boards where user is member", async () => {
       // Create board owned by another user
+      const otherUserBuilder = UserBuilder.valid();
+      const otherUserData = otherUserBuilder.build();
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "other-cognito-id",
-          email: "other@example.com",
-          username: "otheruser",
+          cognitoSub: otherUserData.cognitoSub,
+          email: otherUserData.email,
+          username: otherUserData.username,
           name: "Other User",
+          isActive: true,
         },
       });
 
@@ -201,12 +218,15 @@ describe("Board Routes", () => {
     });
 
     test("should return 403 if user is not a member", async () => {
+      const otherUserBuilder = UserBuilder.valid();
+      const otherUserData = otherUserBuilder.build();
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "other-cognito-id-2",
-          email: "other2@example.com",
-          username: "otheruser2",
+          cognitoSub: otherUserData.cognitoSub,
+          email: otherUserData.email,
+          username: otherUserData.username,
           name: "Other User",
+          isActive: true,
         },
       });
 
@@ -256,12 +276,15 @@ describe("Board Routes", () => {
     });
 
     test("should return 403 if user is not owner or admin", async () => {
+      const otherUserBuilder = UserBuilder.valid();
+      const otherUserData = otherUserBuilder.build();
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "other-cognito-id-3",
-          email: "other3@example.com",
-          username: "otheruser3",
+          cognitoSub: otherUserData.cognitoSub,
+          email: otherUserData.email,
+          username: otherUserData.username,
           name: "Other User",
+          isActive: true,
         },
       });
 
@@ -325,12 +348,15 @@ describe("Board Routes", () => {
     });
 
     test("should return 403 if not owner", async () => {
+      const otherUserBuilder = UserBuilder.valid();
+      const otherUserData = otherUserBuilder.build();
       const otherUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "other-cognito-id-4",
-          email: "other4@example.com",
-          username: "otheruser4",
+          cognitoSub: otherUserData.cognitoSub,
+          email: otherUserData.email,
+          username: otherUserData.username,
           name: "Other User",
+          isActive: true,
         },
       });
 

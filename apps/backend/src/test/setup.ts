@@ -30,29 +30,49 @@ afterAll(async () => {
   await prismaTest.$disconnect();
 });
 
-// Transaction rollback for each test
-let transaction: any;
-
+// Global test lifecycle hooks for proper cleanup
 beforeEach(async () => {
-  // Start a transaction for each test
-  transaction = await prismaTest.$transaction;
+  // Clean up data before each test to ensure isolation
+  if (process.env.CLEANUP_BEFORE_EACH !== "false") {
+    try {
+      // Delete in correct order to respect foreign key constraints
+      await prismaTest.activity.deleteMany({});
+      await prismaTest.checklistItem.deleteMany({});
+      await prismaTest.checklist.deleteMany({});
+      await prismaTest.attachment.deleteMany({});
+      await prismaTest.comment.deleteMany({});
+      await prismaTest.cardLabel.deleteMany({});
+      await prismaTest.label.deleteMany({});
+      await prismaTest.card.deleteMany({});
+      await prismaTest.list.deleteMany({});
+      await prismaTest.boardMember.deleteMany({});
+      await prismaTest.board.deleteMany({});
+      await prismaTest.user.deleteMany({});
+    } catch (error) {
+      console.warn("Cleanup before test failed:", error);
+    }
+  }
 });
 
 afterEach(async () => {
   // Clean up data after each test
   if (process.env.CLEANUP_AFTER_EACH !== "false") {
-    // Delete in correct order to respect foreign key constraints
-    await prismaTest.activity.deleteMany({});
-    await prismaTest.checklistItem.deleteMany({});
-    await prismaTest.checklist.deleteMany({});
-    await prismaTest.attachment.deleteMany({});
-    await prismaTest.comment.deleteMany({});
-    await prismaTest.cardLabel.deleteMany({});
-    await prismaTest.label.deleteMany({});
-    await prismaTest.card.deleteMany({});
-    await prismaTest.list.deleteMany({});
-    await prismaTest.boardMember.deleteMany({});
-    await prismaTest.board.deleteMany({});
-    await prismaTest.user.deleteMany({});
+    try {
+      // Delete in correct order to respect foreign key constraints
+      await prismaTest.activity.deleteMany({});
+      await prismaTest.checklistItem.deleteMany({});
+      await prismaTest.checklist.deleteMany({});
+      await prismaTest.attachment.deleteMany({});
+      await prismaTest.comment.deleteMany({});
+      await prismaTest.cardLabel.deleteMany({});
+      await prismaTest.label.deleteMany({});
+      await prismaTest.card.deleteMany({});
+      await prismaTest.list.deleteMany({});
+      await prismaTest.boardMember.deleteMany({});
+      await prismaTest.board.deleteMany({});
+      await prismaTest.user.deleteMany({});
+    } catch (error) {
+      console.warn("Cleanup after test failed:", error);
+    }
   }
 });

@@ -9,8 +9,30 @@ import { DEFAULT_PROPS } from "@/test/utils/testHelpers";
 
 let idCounter = 1;
 
+// Generate unique test data to avoid conflicts
+function generateUniqueId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+function generateUniqueEmail(): string {
+  return `test-${generateUniqueId()}@example.com`;
+}
+
+function generateUniqueUsername(): string {
+  return `testuser-${generateUniqueId()}`;
+}
+
+function generateUniqueCognitoSub(): string {
+  return `cognito-${generateUniqueId()}`;
+}
+
 export class UserBuilder {
-  private props = { ...DEFAULT_PROPS.USER };
+  private props = { 
+    ...DEFAULT_PROPS.USER,
+    email: generateUniqueEmail(),
+    username: generateUniqueUsername(),
+    cognitoSub: generateUniqueCognitoSub()
+  };
 
   static valid(): UserBuilder {
     return new UserBuilder();
@@ -374,12 +396,13 @@ export function createViewerMember(userId: string, joinedAt?: Date): BoardMember
 
 // Legacy functions for backward compatibility (deprecated)
 export function createMockUser(overrides: any = {}): any {
-  const id = `user-${idCounter++}`;
+  const uniqueId = generateUniqueId();
+  const id = `user-${uniqueId}`;
   return {
     id,
-    cognitoId: `cognito-${id}`,
-    email: `${id}@example.com`,
-    name: `Test User ${id}`,
+    cognitoId: `cognito-${uniqueId}`,
+    email: `test-${uniqueId}@example.com`,
+    name: `Test User ${uniqueId}`,
     avatarUrl: null,
     createdAt: new Date(),
     updatedAt: new Date(),

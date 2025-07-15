@@ -5,6 +5,7 @@ import { prismaTest } from "@/test/setup";
 import { createContainer } from "@/infrastructure/di/container";
 import { mockAuthMiddleware } from "@/test/utils/mockAuth";
 import { BoardRole } from "@prisma/client";
+import { UserBuilder } from "@/test/fixtures/entityFactories";
 
 describe("Board Routes Integration", () => {
   let app: Hono;
@@ -22,15 +23,27 @@ describe("Board Routes Integration", () => {
     app.use("*", mockAuthMiddleware);
     app.route("/boards", createBoardRoutes(container.boardController, container.listController));
 
-    // Create test user
-    testUser = await prismaTest.user.create({
-      data: {
-        cognitoSub: "test-cognito-id",
-        email: "test@example.com",
-        username: "testuser",
+    // Create unique test user with fixed cognito sub for auth
+    const userBuilder = UserBuilder.valid();
+    const userData = userBuilder.build();
+    
+    testUser = await prismaTest.user.upsert({
+      where: { cognitoSub: "test-user-cognito-sub" },
+      update: {},
+      create: {
+        cognitoSub: "test-user-cognito-sub",
+        email: userData.email,
+        username: userData.username,
         name: "Test User",
         isActive: true,
       },
+    });
+    // Clean up any existing data for this user
+    await prismaTest.boardMember.deleteMany({
+      where: { userId: testUser.id },
+    });
+    await prismaTest.board.deleteMany({
+      where: { ownerId: testUser.id },
     });
   });
 
@@ -39,7 +52,7 @@ describe("Board Routes Integration", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer test-token",
+        Authorization: "Bearer test-user-cognito-sub",
       },
       body: JSON.stringify({
         title: "Integration Test Board",
@@ -105,12 +118,15 @@ describe("Board Routes Integration", () => {
     });
 
     // Create board where user is member
+    const otherUserBuilder = UserBuilder.valid();
+    const otherUserData = otherUserBuilder.build();
     const otherUser = await prismaTest.user.create({
       data: {
-        cognitoSub: "other-user-cognito",
-        email: "other@example.com",
-        username: "otheruser",
+        cognitoSub: otherUserData.cognitoSub,
+        email: otherUserData.email,
+        username: otherUserData.username,
         name: "Other User",
+        isActive: true,
       },
     });
 
@@ -135,7 +151,7 @@ describe("Board Routes Integration", () => {
 
     const response = await app.request("/boards", {
       headers: {
-        Authorization: "Bearer test-token",
+        Authorization: "Bearer test-user-cognito-sub",
       },
     });
 
@@ -170,7 +186,7 @@ describe("Board Routes Integration", () => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer test-token",
+        Authorization: "Bearer test-user-cognito-sub",
       },
       body: JSON.stringify({
         title: "Updated Title",
@@ -226,7 +242,7 @@ describe("Board Routes Integration", () => {
     const response = await app.request(`/boards/${board.id}`, {
       method: "DELETE",
       headers: {
-        Authorization: "Bearer test-token",
+        Authorization: "Bearer test-user-cognito-sub",
       },
     });
 
@@ -263,12 +279,15 @@ describe("Board Routes Integration", () => {
       },
     });
 
+    const newUserBuilder = UserBuilder.valid();
+    const newUserData = newUserBuilder.build();
     const newUser = await prismaTest.user.create({
       data: {
-        cognitoSub: "new-member-cognito",
-        email: "newmember@example.com",
-        username: "newmember",
+        cognitoSub: newUserData.cognitoSub,
+        email: newUserData.email,
+        username: newUserData.username,
         name: "New Member",
+        isActive: true,
       },
     });
 
@@ -276,7 +295,7 @@ describe("Board Routes Integration", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer test-token",
+        Authorization: "Bearer test-user-cognito-sub",
       },
       body: JSON.stringify({
         userId: newUser.id,

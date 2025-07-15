@@ -3,6 +3,7 @@ import { PrismaBoardRepository } from "@/infrastructure/repositories/PrismaBoard
 import { prismaTest } from "@/test/setup";
 import { Board } from "@kanban/domain-core";
 import { BoardRole } from "@prisma/client";
+import { UserBuilder } from "@/test/fixtures/entityFactories";
 
 describe("PrismaBoardRepository", () => {
   let repository: PrismaBoardRepository;
@@ -11,12 +12,15 @@ describe("PrismaBoardRepository", () => {
   beforeEach(async () => {
     repository = new PrismaBoardRepository(prismaTest);
 
-    // Create a test user
+    // Create a unique test user for each test
+    const userBuilder = UserBuilder.valid();
+    const userData = userBuilder.build();
+    
     testUser = await prismaTest.user.create({
       data: {
-        cognitoSub: "test-cognito-id",
-        email: "test@example.com",
-        username: "testuser",
+        cognitoSub: userData.cognitoSub,
+        email: userData.email,
+        username: userData.username,
         name: "Test User",
         isActive: true,
       },
@@ -142,12 +146,15 @@ describe("PrismaBoardRepository", () => {
 
   describe("findByMember", () => {
     test("should find boards where user is a member", async () => {
-      // Create another user first
+      // Create another unique user
+      const anotherUserBuilder = UserBuilder.valid();
+      const anotherUserData = anotherUserBuilder.build();
+      
       const anotherUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "another-user-cognito",
-          email: "another@example.com",
-          username: "anotheruser",
+          cognitoSub: anotherUserData.cognitoSub,
+          email: anotherUserData.email,
+          username: anotherUserData.username,
           name: "Another User",
           isActive: true,
         },
@@ -184,11 +191,14 @@ describe("PrismaBoardRepository", () => {
         data: { title: "Test Board", ownerId: testUser.id },
       });
 
+      const newUserBuilder = UserBuilder.valid();
+      const newUserData = newUserBuilder.build();
+      
       const newUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "new-user-cognito-1",
-          email: "newuser1@example.com",
-          username: "newuser1",
+          cognitoSub: newUserData.cognitoSub,
+          email: newUserData.email,
+          username: newUserData.username,
           name: "New User 1",
           isActive: true,
         },
@@ -214,11 +224,14 @@ describe("PrismaBoardRepository", () => {
         data: { title: "Test Board", ownerId: testUser.id },
       });
 
+      const newUserBuilder = UserBuilder.valid();
+      const newUserData = newUserBuilder.build();
+      
       const newUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "new-user-cognito-2",
-          email: "newuser2@example.com",
-          username: "newuser2",
+          cognitoSub: newUserData.cognitoSub,
+          email: newUserData.email,
+          username: newUserData.username,
           name: "New User 2",
           isActive: true,
         },
@@ -264,12 +277,16 @@ describe("PrismaBoardRepository", () => {
         data: { title: "Test Board", ownerId: testUser.id },
       });
 
+      const newUserBuilder = UserBuilder.valid();
+      const newUserData = newUserBuilder.build();
+      
       const newUser = await prismaTest.user.create({
         data: {
-          cognitoSub: "new-user-cognito-3",
-          email: "newuser3@example.com",
-          username: "newuser3",
+          cognitoSub: newUserData.cognitoSub,
+          email: newUserData.email,
+          username: newUserData.username,
           name: "New User 3",
+          isActive: true,
         },
       });
 
