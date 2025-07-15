@@ -3,8 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target node",
-    "start": "node dist/index.js",
+    "build": "bun build src/index.ts --outdir dist --target node --external @kanban/domain-core --external @kanban/use-cases",
+    "start": "bun dist/index.js",
     "clean": "rm -rf dist",
     "test": "bun test",
     "test:watch": "bun test --watch",
@@ -37,7 +37,6 @@
     "@types/node": "^20.11.17",
     "bun-types": "^1.2.16",
     "prisma": "^6.10.0",
-    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
 }
