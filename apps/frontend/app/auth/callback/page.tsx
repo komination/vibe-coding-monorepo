@@ -28,7 +28,7 @@ function CallbackHandler() {
 
       try {
         // Exchange authorization code for tokens
-        const tokenResponse = await fetch(`https://${cognitoConfig.oauth.domain}.auth.${cognitoConfig.region}.amazoncognito.com/oauth2/token`, {
+        const tokenResponse = await fetch(`https://${cognitoConfig.domain}.auth.${cognitoConfig.region}.amazoncognito.com/oauth2/token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -37,7 +37,7 @@ function CallbackHandler() {
             grant_type: 'authorization_code',
             client_id: cognitoConfig.userPoolWebClientId,
             code: code,
-            redirect_uri: cognitoConfig.oauth.redirectSignIn,
+            redirect_uri: cognitoConfig.redirectSignIn,
           }),
         })
 

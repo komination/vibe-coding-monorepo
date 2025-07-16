@@ -14,7 +14,6 @@ export function useAuth() {
   const [authState, setAuthState] = useAtom(authAtom)
   const queryClient = useQueryClient()
 
-  // Verify current token and get user profile
   const { data: userData, isLoading } = useQuery({
     queryKey: ['auth', 'profile'],
     queryFn: async () => {
@@ -30,10 +29,9 @@ export function useAuth() {
       }
     },
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   })
 
-  // Update auth state when user data changes
   React.useEffect(() => {
     if (userData) {
       setAuthState({
@@ -69,6 +67,7 @@ export function useAuth() {
         isAuthenticated: false,
         isLoading: false,
       })
+      
       window.location.href = getCognitoLogoutUrl()
     },
   })
