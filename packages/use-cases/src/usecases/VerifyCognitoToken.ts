@@ -8,32 +8,49 @@ export interface VerifyCognitoTokenRequest {
 
 export interface VerifyCognitoTokenResponse {
   user: User;
-  payload: CognitoJWTPayload;
+  payload: CognitoAccessTokenPayload;
 }
 
-export interface CognitoJWTPayload {
+// Cognito Access Token specific payload
+export interface CognitoAccessTokenPayload {
   sub: string;
-  email: string;
-  email_verified?: boolean;
-  name?: string;
-  picture?: string;
+  token_use: 'access';
+  scope: string;
+  client_id: string;
   username?: string;
   'cognito:username'?: string;
-  token_use: 'access' | 'id';
-  client_id: string;
   iss: string;
   exp: number;
   iat: number;
-  aud: string;
+  jti?: string;
 }
+
+// For backward compatibility, export the old name as well
+export type CognitoJWTPayload = CognitoAccessTokenPayload;
 
 export interface CognitoConfig {
   isConfigured: boolean;
   region: string;
   userPoolId: string;
   clientId: string;
+  domain?: string;
 }
 
+interface UserInfo {
+  sub: string;
+  email: string;
+  email_verified: boolean;
+  username?: string;
+  name?: string;
+  picture?: string;
+  preferred_username?: string;
+}
+
+/**
+ * Verifies and processes Cognito access tokens.
+ * This use case only accepts access tokens and uses the UserInfo endpoint
+ * to fetch user details when creating new users.
+ */
 export class VerifyCognitoTokenUseCase {
   private jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 
@@ -48,35 +65,51 @@ export class VerifyCognitoTokenUseCase {
     }
   }
 
+  /**
+   * Verifies a Cognito access token and returns the associated user.
+   * For new users, fetches user info from the UserInfo endpoint.
+   * 
+   * @param request Contains the access token to verify
+   * @returns The verified user and token payload
+   * @throws Error if token is invalid, expired, or not an access token
+   */
   async execute(request: VerifyCognitoTokenRequest): Promise<VerifyCognitoTokenResponse> {
     if (!this.cognitoConfig.isConfigured || !this.jwks) {
       throw new Error('Cognito not configured');
     }
 
     try {
-      // Verify JWT token using Cognito's public keys
+      // Verify JWT access token using Cognito's public keys
       const { payload } = await jwtVerify(request.token, this.jwks, {
         issuer: `https://cognito-idp.${this.cognitoConfig.region}.amazonaws.com/${this.cognitoConfig.userPoolId}`,
-        audience: this.cognitoConfig.clientId,
       });
 
-      const cognitoPayload = payload as unknown as CognitoJWTPayload;
+      const cognitoPayload = payload as unknown as CognitoAccessTokenPayload;
+
+      // Validate this is an access token
+      if (cognitoPayload.token_use !== 'access') {
+        throw new Error('Invalid token type: Only access tokens are accepted');
+      }
 
       // Validate required fields
       if (!cognitoPayload.sub) {
         throw new Error('Invalid token: missing subject');
       }
 
-      if (!cognitoPayload.email) {
-        throw new Error('Invalid token: missing email');
+      // Validate client_id
+      if (cognitoPayload.client_id !== this.cognitoConfig.clientId) {
+        throw new Error('Invalid token: client_id mismatch');
       }
 
-      // Find or create user based on Cognito sub
+      // Find user based on Cognito sub
       let user = await this.userRepository.findByCognitoSub(cognitoPayload.sub);
 
       if (!user) {
+        // For new users, fetch user info from UserInfo endpoint
+        const userInfo = await this.fetchUserInfo(request.token);
+        
         // Check if user exists by email (for migration scenario)
-        const existingUser = await this.userRepository.findByEmail(cognitoPayload.email);
+        const existingUser = await this.userRepository.findByEmail(userInfo.email);
         
         if (existingUser) {
           // Update existing user to link with Cognito
@@ -84,17 +117,19 @@ export class VerifyCognitoTokenUseCase {
           user = await this.userRepository.update(updatedUser);
         } else {
           // Create new Cognito user
-          const username = cognitoPayload.username || 
-                          cognitoPayload['cognito:username'] || 
-                          cognitoPayload.email.split('@')[0] ||
+          const username = userInfo.username || 
+                          userInfo.preferred_username ||
+                          cognitoPayload.username ||
+                          cognitoPayload['cognito:username'] ||
+                          userInfo.email.split('@')[0] ||
                           'user';
 
           const newUser = User.createCognitoUser({
-            email: cognitoPayload.email,
+            email: userInfo.email,
             username: await this.generateUniqueUsername(username),
             cognitoSub: cognitoPayload.sub,
-            name: cognitoPayload.name,
-            avatarUrl: cognitoPayload.picture,
+            name: userInfo.name,
+            avatarUrl: userInfo.picture,
           });
 
           user = await this.userRepository.create(newUser);
@@ -112,13 +147,13 @@ export class VerifyCognitoTokenUseCase {
       };
     } catch (error) {
       if (error instanceof errors.JWTExpired) {
-        throw new Error('Token expired');
+        throw new Error('Access token expired');
       }
       if (error instanceof errors.JWTInvalid) {
-        throw new Error('Invalid token');
+        throw new Error('Invalid access token');
       }
       if (error instanceof errors.JWKSNoMatchingKey) {
-        throw new Error('Token validation failed');
+        throw new Error('Access token validation failed: Invalid signature');
       }
       
       // Re-throw known errors
@@ -126,7 +161,7 @@ export class VerifyCognitoTokenUseCase {
         throw error;
       }
       
-      throw new Error('Token verification failed');
+      throw new Error('Access token verification failed');
     }
   }
 
@@ -141,5 +176,40 @@ export class VerifyCognitoTokenUseCase {
     }
 
     return username;
+  }
+
+  /**
+   * Fetches user information from the Cognito UserInfo endpoint.
+   * This is only called for new users who don't exist in the database.
+   * 
+   * @param accessToken The verified access token
+   * @returns User information including email, name, and picture
+   * @throws Error if the request fails or email is missing
+   */
+  private async fetchUserInfo(accessToken: string): Promise<UserInfo> {
+    if (!this.cognitoConfig.domain) {
+      throw new Error('Cognito domain not configured');
+    }
+
+    const userInfoUrl = `https://${this.cognitoConfig.domain}/oauth2/userInfo`;
+    
+    const response = await fetch(userInfoUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch user info: ${response.status} - ${errorText}`);
+    }
+
+    const userInfo = await response.json() as UserInfo;
+    
+    if (!userInfo.email) {
+      throw new Error('User info does not contain email');
+    }
+
+    return userInfo;
   }
 }

@@ -1,6 +1,4 @@
-import { User, Board, List, Card, Label, Activity, ActivityType, EntityType, BoardRole } from "@kanban/domain-core";
-
-let idCounter = 1;
+import { User, Board, List, Card, Label, Activity, ActivityType, EntityType } from "@kanban/domain-core";
 
 // Generate unique test data to avoid conflicts
 function generateUniqueId(): string {
@@ -385,7 +383,7 @@ export class ActivityBuilder {
   }
 }
 
-// Reset counter utility for tests
-export function resetIdCounter() {
-  idCounter = 1;
-}
+// // Reset counter utility for tests
+// export function resetIdCounter() {
+//   idCounter = 1;
+// }

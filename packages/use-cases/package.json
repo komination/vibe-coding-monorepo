@@ -2,11 +2,11 @@
   "name": "@kanban/use-cases",
   "version": "1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/src/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/src/index.js",
       "types": "./dist/index.d.ts"
     }
   },

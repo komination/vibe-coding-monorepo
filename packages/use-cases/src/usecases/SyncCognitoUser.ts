@@ -1,9 +1,22 @@
 import { User } from '@kanban/domain-core';
 import { UserRepository } from '@kanban/domain-core';
-import { CognitoJWTPayload } from './VerifyCognitoToken';
+
+// This use case is deprecated in favor of VerifyCognitoTokenUseCase
+// which handles both token verification and user sync with UserInfo endpoint
+
+// Define a minimal interface for backward compatibility
+interface CognitoIDTokenPayload {
+  sub: string;
+  email: string;
+  email_verified?: boolean;
+  name?: string;
+  picture?: string;
+  username?: string;
+  'cognito:username'?: string;
+}
 
 export interface SyncCognitoUserRequest {
-  cognitoPayload: CognitoJWTPayload;
+  cognitoPayload: CognitoIDTokenPayload;
 }
 
 export interface SyncCognitoUserResponse {
@@ -85,7 +98,7 @@ export class SyncCognitoUserUseCase {
     };
   }
 
-  private shouldUpdateProfile(user: User, cognitoPayload: CognitoJWTPayload): boolean {
+  private shouldUpdateProfile(user: User, cognitoPayload: CognitoIDTokenPayload): boolean {
     // Check if we need to update the profile based on Cognito data
     const nameChanged = !!(cognitoPayload.name && cognitoPayload.name !== user.name);
     const avatarChanged = !!(cognitoPayload.picture && cognitoPayload.picture !== user.avatarUrl);
@@ -120,14 +133,14 @@ export class BulkCognitoUserSyncService {
     private syncCognitoUserUseCase: SyncCognitoUserUseCase
   ) {}
 
-  async syncUsersFromCognito(cognitoPayloads: CognitoJWTPayload[]): Promise<{
+  async syncUsersFromCognito(cognitoPayloads: CognitoIDTokenPayload[]): Promise<{
     synced: User[];
     created: User[];
-    errors: { payload: CognitoJWTPayload; error: string }[];
+    errors: { payload: CognitoIDTokenPayload; error: string }[];
   }> {
     const synced: User[] = [];
     const created: User[] = [];
-    const errors: { payload: CognitoJWTPayload; error: string }[] = [];
+    const errors: { payload: CognitoIDTokenPayload; error: string }[] = [];
 
     for (const payload of cognitoPayloads) {
       try {
