@@ -30,9 +30,11 @@ const envSchema = z.object({
   AWS_REGION: z.string().optional(),
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  COGNITO_REGION: z.string().optional(),
   COGNITO_USER_POOL_ID: z.string().optional(),
   COGNITO_CLIENT_ID: z.string().optional(),
   COGNITO_CLIENT_SECRET: z.string().optional(),
+  COGNITO_DOMAIN: z.string().optional(),
 });
 
 // Type for validated environment variables
@@ -81,11 +83,12 @@ export const redisConfig = {
 } as const;
 
 export const cognitoConfig = {
-  region: env.AWS_REGION,
+  region: env.COGNITO_REGION || env.AWS_REGION || 'ap-northeast-1',
   accessKeyId: env.AWS_ACCESS_KEY_ID,
   secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  userPoolId: env.COGNITO_USER_POOL_ID,
-  clientId: env.COGNITO_CLIENT_ID,
+  userPoolId: env.COGNITO_USER_POOL_ID || '',
+  clientId: env.COGNITO_CLIENT_ID || '',
   clientSecret: env.COGNITO_CLIENT_SECRET,
+  domain: env.COGNITO_DOMAIN,
   isConfigured: !!(env.COGNITO_USER_POOL_ID && env.COGNITO_CLIENT_ID),
 } as const;
