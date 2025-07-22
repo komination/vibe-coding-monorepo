@@ -13,7 +13,7 @@ import {
   Box,
   Alert,
 } from "@mui/material"
-import { boardsApi, type CreateBoardRequest } from "@/lib/api"
+import { createBoard, type CreateBoardRequest } from "@/lib/actions/boards"
 
 interface CreateBoardDialogProps {
   open: boolean
@@ -53,7 +53,7 @@ export function CreateBoardDialog({
     setError(null)
 
     try {
-      await boardsApi.createBoard({
+      await createBoard({
         title: formData.title.trim(),
         description: formData.description?.trim() || undefined,
         isPrivate: formData.isPrivate,
@@ -63,6 +63,9 @@ export function CreateBoardDialog({
       setFormData({ title: "", description: "", isPrivate: false })
       onBoardCreated()
       onClose()
+      
+      // The Server Action will handle redirect to the new board
+      // No need to manually update the boards list
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create board")
     } finally {

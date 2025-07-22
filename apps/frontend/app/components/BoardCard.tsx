@@ -18,15 +18,16 @@ import PeopleIcon from "@mui/icons-material/People"
 import ListIcon from "@mui/icons-material/List"
 import LockIcon from "@mui/icons-material/Lock"
 import PublicIcon from "@mui/icons-material/Public"
-import type { Board } from "@/lib/api"
+import type { Board } from "@/lib/actions/boards"
 
 interface BoardCardProps {
   board: Board
   onEdit?: () => void
   onDelete?: () => void
+  isDeleting?: boolean
 }
 
-export function BoardCard({ board, onEdit, onDelete }: BoardCardProps) {
+export function BoardCard({ board, onEdit, onDelete, isDeleting }: BoardCardProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -60,10 +61,12 @@ export function BoardCard({ board, onEdit, onDelete }: BoardCardProps) {
         textDecoration: "none",
         transition: "transform 0.2s, box-shadow 0.2s",
         "&:hover": {
-          transform: "translateY(-2px)",
-          boxShadow: 3,
+          transform: isDeleting ? "none" : "translateY(-2px)",
+          boxShadow: isDeleting ? 1 : 3,
         },
         position: "relative",
+        opacity: isDeleting ? 0.6 : 1,
+        pointerEvents: isDeleting ? "none" : "auto",
       }}
     >
       {board.backgroundUrl ? (
@@ -183,8 +186,12 @@ export function BoardCard({ board, onEdit, onDelete }: BoardCardProps) {
         onClose={handleMenuClose}
       >
         <MenuItem onClick={handleEdit}>Edit Board</MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
-          Delete Board
+        <MenuItem 
+          onClick={handleDelete} 
+          sx={{ color: "error.main" }}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Deleting..." : "Delete Board"}
         </MenuItem>
       </Menu>
     </Card>
