@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   Typography,
-  Grid,
   Button,
   Box,
   Alert,
@@ -13,6 +13,7 @@ import AddIcon from "@mui/icons-material/Add"
 import { type Board, deleteBoard } from "@/lib/actions/boards"
 import { BoardCard } from "@/app/components/BoardCard"
 import { CreateBoardDialog } from "@/app/components/CreateBoardDialog"
+import { useServerActionErrorHandler } from "@/lib/actions/errorHandler"
 
 interface DashboardClientProps {
   initialBoards: Board[]
@@ -23,11 +24,20 @@ export function DashboardClient({ initialBoards }: DashboardClientProps) {
   const [error, setError] = useState<string | null>(null)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [deletingBoardId, setDeletingBoardId] = useState<string | null>(null)
+  const { handleWithReauth } = useServerActionErrorHandler()
+  const router = useRouter()
 
-  const handleBoardCreated = () => {
-    // After board creation via Server Action, we don't need to manually update
-    // the list as the page will be revalidated and redirected
+  const handleBoardCreated = (boardId?: string) => {
+    // Close the dialog
     setCreateDialogOpen(false)
+    
+    // If we have a board ID, redirect to the new board page
+    if (boardId) {
+      router.push(`/board/${boardId}`)
+    } else {
+      // Fallback: refresh the page to get the updated board list
+      router.refresh()
+    }
   }
 
   const handleDeleteBoard = async (boardId: string) => {
@@ -42,10 +52,12 @@ export function DashboardClient({ initialBoards }: DashboardClientProps) {
       // Use Server Action for deletion
       await deleteBoard(boardId)
       
-      // The Server Action will handle redirect, but we can optimistically update
+      // Optimistically update the UI
       setBoards(prev => prev.filter(board => board.id !== boardId))
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete board")
+      // Use enhanced error handling
+      const parsedError = await handleWithReauth(err)
+      setError(parsedError.userMessage)
     } finally {
       setDeletingBoardId(null)
     }
@@ -89,7 +101,7 @@ export function DashboardClient({ initialBoards }: DashboardClientProps) {
           <Typography variant="h5" color="text.secondary" gutterBottom>
             No boards yet
           </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
             Create your first board to get started with organizing your work.
           </Typography>
           <Button
@@ -102,17 +114,27 @@ export function DashboardClient({ initialBoards }: DashboardClientProps) {
           </Button>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+              lg: "repeat(4, 1fr)",
+            },
+            gap: 3,
+          }}
+        >
           {Array.isArray(boards) && boards.map((board) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={board.id}>
-              <BoardCard
-                board={board}
-                onDelete={() => handleDeleteBoard(board.id)}
-                isDeleting={deletingBoardId === board.id}
-              />
-            </Grid>
+            <BoardCard
+              key={board.id}
+              board={board}
+              onDelete={() => handleDeleteBoard(board.id)}
+              isDeleting={deletingBoardId === board.id}
+            />
           ))}
-        </Grid>
+        </Box>
       )}
 
       {/* Floating Action Button for mobile */}

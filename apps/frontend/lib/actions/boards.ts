@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath, revalidateTag } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { api } from '../server/api'
 import { requireAuth } from '../server/auth'
 
@@ -52,9 +51,6 @@ export interface BoardMember {
  */
 export async function createBoard(formData: FormData | CreateBoardRequest) {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     // Extract data from FormData or use object directly
     const data: CreateBoardRequest = formData instanceof FormData ? {
       title: formData.get('title') as string,
@@ -79,12 +75,8 @@ export async function createBoard(formData: FormData | CreateBoardRequest) {
     revalidatePath('/dashboard')
     revalidateTag('boards')
 
-    // Redirect to the new board
-    if (result.data?.id) {
-      redirect(`/boards/${result.data.id}`)
-    }
-
-    return { success: true, board: result.data }
+    // Return board data without redirect (client will handle navigation)
+    return { success: true, board: result.data, boardId: result.data?.id }
   } catch (error) {
     console.error('Failed to create board:', error)
     throw new Error(error instanceof Error ? error.message : 'Failed to create board')
@@ -147,8 +139,7 @@ export async function deleteBoard(boardId: string) {
     revalidateTag('boards')
     revalidateTag(`board-${boardId}`)
 
-    // Redirect to dashboard
-    redirect('/dashboard')
+    return { success: true, message: 'Board deleted successfully' }
   } catch (error) {
     console.error('Failed to delete board:', error)
     throw new Error(error instanceof Error ? error.message : 'Failed to delete board')
@@ -270,9 +261,6 @@ export async function removeBoardMember(boardId: string, userId: string) {
  */
 export async function getBoards(): Promise<Board[]> {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     const result = await api.boards.list()
 
     if (result.error) {
@@ -280,7 +268,15 @@ export async function getBoards(): Promise<Board[]> {
       return []
     }
 
-    return result.data || []
+    // Backend returns {ownedBoards, memberBoards, totalCount}
+    // We need to combine them into a single array
+    if (result.data) {
+      const data = result.data as { ownedBoards?: Board[], memberBoards?: Board[], totalCount?: number }
+      const { ownedBoards = [], memberBoards = [] } = data
+      return [...ownedBoards, ...memberBoards]
+    }
+
+    return []
   } catch (error) {
     console.error('Error fetching boards:', error)
     return []

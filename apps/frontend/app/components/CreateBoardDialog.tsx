@@ -14,11 +14,12 @@ import {
   Alert,
 } from "@mui/material"
 import { createBoard, type CreateBoardRequest } from "@/lib/actions/boards"
+import { useServerActionErrorHandler } from "@/lib/actions/errorHandler"
 
 interface CreateBoardDialogProps {
   open: boolean
   onClose: () => void
-  onBoardCreated: () => void
+  onBoardCreated: (boardId?: string) => void
 }
 
 export function CreateBoardDialog({
@@ -33,6 +34,7 @@ export function CreateBoardDialog({
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { handleWithReauth } = useServerActionErrorHandler()
 
   const handleChange = (field: keyof CreateBoardRequest) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -53,7 +55,7 @@ export function CreateBoardDialog({
     setError(null)
 
     try {
-      await createBoard({
+      const result = await createBoard({
         title: formData.title.trim(),
         description: formData.description?.trim() || undefined,
         isPrivate: formData.isPrivate,
@@ -61,13 +63,15 @@ export function CreateBoardDialog({
       
       // Reset form and close dialog
       setFormData({ title: "", description: "", isPrivate: false })
-      onBoardCreated()
-      onClose()
       
-      // The Server Action will handle redirect to the new board
-      // No need to manually update the boards list
+      // Pass the board ID to the parent component for redirect
+      const boardId = result.boardId || result.board?.id
+      onBoardCreated(boardId)
+      onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create board")
+      // Use enhanced error handling
+      const parsedError = await handleWithReauth(err)
+      setError(parsedError.userMessage)
     } finally {
       setLoading(false)
     }

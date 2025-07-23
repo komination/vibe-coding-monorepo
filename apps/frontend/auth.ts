@@ -28,14 +28,12 @@ export const config = {
       if (account?.provider === "cognito") {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
-        token.cognitoSub = profile?.sub
+        token.cognitoSub = profile?.sub || token.cognitoSub
       }
       return token
     },
     async session({ session, token }) {
-      // Pass tokens to session for API calls
-      session.accessToken = token.accessToken as string
-      session.refreshToken = token.refreshToken as string
+      // Only pass user info to session, tokens stay server-side only
       session.cognitoSub = token.cognitoSub as string
       return session
     },

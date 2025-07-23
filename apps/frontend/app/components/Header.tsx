@@ -11,15 +11,18 @@ import {
   MenuItem,
   IconButton,
   Box,
+  Chip,
 } from "@mui/material"
-import { useSession, signOut } from "next-auth/react"
+import { signOut } from "next-auth/react"
+import { useAuthenticatedSession } from "@/lib/auth/useAuthenticatedSession"
 import Link from "next/link"
 import AccountCircleIcon from "@mui/icons-material/AccountCircle"
 import LogoutIcon from "@mui/icons-material/Logout"
 import DashboardIcon from "@mui/icons-material/Dashboard"
+import WarningIcon from "@mui/icons-material/Warning"
 
 export function Header() {
-  const { data: session } = useSession()
+  const { data: authenticatedSession, status, isTokenExpired, signInRequired } = useAuthenticatedSession()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -62,44 +65,74 @@ export function Header() {
           Dashboard
         </Button>
 
-        {session?.user && (
-          <Box>
-            <IconButton
-              onClick={handleMenuOpen}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {/* Show session status indicator */}
+          {isTokenExpired && (
+            <Chip
+              icon={<WarningIcon />}
+              label="Session Expired"
+              color="warning"
               size="small"
-              sx={{ ml: 2 }}
-              aria-controls={anchorEl ? "account-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={anchorEl ? "true" : undefined}
-            >
-              <Avatar
-                src={session.user.image || undefined}
-                alt={session.user.name || session.user.email || "User"}
-                sx={{ width: 32, height: 32 }}
+              onClick={signInRequired}
+              sx={{ cursor: "pointer" }}
+            />
+          )}
+          
+          {status === "loading" && (
+            <Chip label="Loading..." size="small" />
+          )}
+
+          {authenticatedSession?.user ? (
+            <Box>
+              <IconButton
+                onClick={handleMenuOpen}
+                size="small"
+                sx={{ ml: 2 }}
+                aria-controls={anchorEl ? "account-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={anchorEl ? "true" : undefined}
               >
-                {session.user.name?.[0] || session.user.email?.[0] || "U"}
-              </Avatar>
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              id="account-menu"
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              onClick={handleMenuClose}
-              transformOrigin={{ horizontal: "right", vertical: "top" }}
-              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                <Avatar
+                  src={authenticatedSession.user.image || undefined}
+                  alt={(authenticatedSession.user.name && typeof authenticatedSession.user.name === 'string' ? authenticatedSession.user.name : '') || (authenticatedSession.user.email && typeof authenticatedSession.user.email === 'string' ? authenticatedSession.user.email : '') || "User"}
+                  sx={{ 
+                    width: 32, 
+                    height: 32,
+                    border: isTokenExpired ? "2px solid orange" : "none"
+                  }}
+                >
+                  {(authenticatedSession.user.name && typeof authenticatedSession.user.name === 'string' ? authenticatedSession.user.name.charAt(0).toUpperCase() : '') || (authenticatedSession.user.email && typeof authenticatedSession.user.email === 'string' ? authenticatedSession.user.email.charAt(0).toUpperCase() : '') || "U"}
+                </Avatar>
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                id="account-menu"
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                onClick={handleMenuClose}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                <MenuItem component={Link} href="/profile" onClick={handleMenuClose}>
+                  <AccountCircleIcon sx={{ mr: 1 }} />
+                  Profile
+                </MenuItem>
+                <MenuItem onClick={handleSignOut}>
+                  <LogoutIcon sx={{ mr: 1 }} />
+                  Sign Out
+                </MenuItem>
+              </Menu>
+            </Box>
+          ) : status === "unauthenticated" ? (
+            <Button
+              color="inherit"
+              onClick={signInRequired}
+              variant="outlined"
             >
-              <MenuItem onClick={handleMenuClose}>
-                <AccountCircleIcon sx={{ mr: 1 }} />
-                Profile
-              </MenuItem>
-              <MenuItem onClick={handleSignOut}>
-                <LogoutIcon sx={{ mr: 1 }} />
-                Sign Out
-              </MenuItem>
-            </Menu>
-          </Box>
-        )}
+              Sign In
+            </Button>
+          ) : null}
+        </Box>
       </Toolbar>
     </AppBar>
   )

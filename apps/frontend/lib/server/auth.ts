@@ -1,11 +1,9 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { serverApi } from "./api"
+import { serverApi, api } from "./api"
 import type { ReactElement } from "react"
 
 export interface AuthenticatedSession {
-  accessToken: string
-  refreshToken: string
   cognitoSub: string
   user?: {
     id: string
@@ -21,13 +19,11 @@ export interface AuthenticatedSession {
 export async function getSession(): Promise<AuthenticatedSession | null> {
   const session = await auth()
   
-  if (!session?.accessToken) {
+  if (!session?.cognitoSub) {
     return null
   }
 
   return {
-    accessToken: session.accessToken,
-    refreshToken: session.refreshToken,
     cognitoSub: session.cognitoSub,
     user: session.user ? {
       id: session.user.id || session.cognitoSub,
@@ -46,8 +42,8 @@ export async function requireAuth(redirectTo?: string): Promise<AuthenticatedSes
   
   if (!session) {
     const signInUrl = redirectTo 
-      ? `/auth/signin?callbackUrl=${encodeURIComponent(redirectTo)}`
-      : '/auth/signin'
+      ? `/signin?callbackUrl=${encodeURIComponent(redirectTo)}`
+      : '/signin'
     redirect(signInUrl)
   }
 
@@ -65,7 +61,7 @@ export async function getCurrentUser() {
   }
 
   try {
-    const result = await serverApi('/auth/me')
+    const result = await api.auth.profile()
     
     if (result.error || !result.data) {
       console.error('Failed to get user profile:', result.error)
@@ -123,12 +119,12 @@ export async function getBoardAccess(boardId: string): Promise<{
  * Utility to handle authentication errors in Server Components
  * Logs the error and redirects to appropriate page
  */
-export function handleAuthError(error: any, fallbackPath = '/auth/signin') {
+export function handleAuthError(error: any, fallbackPath = '/signin') {
   console.error('Authentication error:', error)
   
   // If it's a token expiration error, redirect to sign-in
   if (error?.message?.includes('expired') || error?.status === 401) {
-    redirect('/auth/signin?error=session_expired')
+    redirect('/signin?error=session_expired')
   }
   
   // For other errors, redirect to fallback path
@@ -148,7 +144,7 @@ export function withAuth<T extends any[]>(
 ) {
   return async (...args: T): Promise<ReactElement> => {
     try {
-      const session = await requireAuth(options.redirectTo)
+      await requireAuth(options.redirectTo)
       
       // Check board access if required
       if (options.requireBoardAccess) {

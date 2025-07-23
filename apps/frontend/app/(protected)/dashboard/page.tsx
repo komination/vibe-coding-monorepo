@@ -1,12 +1,8 @@
 import { Container, Typography, Box } from "@mui/material"
 import { getBoards } from "@/lib/actions/boards"
-import { requireAuth } from "@/lib/server/auth"
 import { DashboardClient } from "@/app/(protected)/dashboard/components/DashboardClient"
 
 export default async function DashboardPage() {
-  // Ensure user is authenticated
-  await requireAuth()
-
   // Fetch boards on the server
   const boards = await getBoards()
 

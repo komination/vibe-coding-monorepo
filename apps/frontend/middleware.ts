@@ -6,7 +6,8 @@ export default auth((req) => {
   
   // Allow access to auth routes and API routes
   if (
-    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/signin") ||
+    pathname.startsWith("/signout") ||
     pathname.startsWith("/api/auth/") ||
     pathname === "/" ||
     pathname.startsWith("/_next/") ||
@@ -21,7 +22,7 @@ export default auth((req) => {
 
   // Protect all other routes - redirect to signin if not authenticated
   if (!req.auth) {
-    const signInUrl = new URL("/auth/signin", req.url)
+    const signInUrl = new URL("/signin", req.url)
     signInUrl.searchParams.set("callbackUrl", pathname)
     return NextResponse.redirect(signInUrl)
   }
