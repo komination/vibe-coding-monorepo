@@ -5,7 +5,7 @@ import { VerifyCognitoTokenUseCase } from '@kanban/use-cases';
 export function createAuthMiddleware(verifyCognitoTokenUseCase: VerifyCognitoTokenUseCase) {
   return async function authMiddleware(c: Context, next: Next) {
     const authHeader = c.req.header('Authorization');
-    
+        
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return c.json({ error: 'Authorization header required' }, 401);
     }

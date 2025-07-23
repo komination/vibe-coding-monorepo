@@ -22,20 +22,10 @@ export function createApiRoutes(prisma: PrismaClient) {
     container.verifyCognitoTokenUseCase
   );
   
-  // Register routes
+  app.use('*', authMiddleware);
   
-  // Public routes (no authentication required)
   app.route('/auth', createAuthRoutes(container.authController));
-  
-  // Protected routes (authentication required)
-  app.use('/boards/*', authMiddleware);
-  app.use('/cards/*', authMiddleware);
-  app.use('/lists/*', authMiddleware);
-  app.use('/labels/*', authMiddleware);
-  
-  // Protected auth routes (user profile management)
-  app.use('/auth/me', authMiddleware);
-  app.use('/auth/profile', authMiddleware);
+
   
   app.route('/boards', createBoardRoutes(container.boardController, container.listController));
   app.route('/cards', createCardRoutes(container.cardController));

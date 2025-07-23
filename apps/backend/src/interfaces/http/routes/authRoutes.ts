@@ -9,8 +9,8 @@ export function createAuthRoutes(authController: AuthController) {
     return authController.logout(c);
   });
 
-  // GET /api/auth/me - Get current user profile (requires authentication)
-  app.get('/me', async (c) => {
+  // GET /api/auth/profile - Get user profile (requires authentication)
+  app.get('/profile', async (c) => {
     return authController.getProfile(c);
   });
 
