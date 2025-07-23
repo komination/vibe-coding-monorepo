@@ -26,11 +26,11 @@
 	},
 
 	// https://containers.dev/features
-	"features": {
-		"ghcr.io/devcontainers/features/github-cli:1": {
-			"version": "latest"
-		}
-	}
+	// "features": {
+	// 	"ghcr.io/devcontainers/features/github-cli:1": {
+	// 		"version": "latest"
+	// 	}
+	// }
   	// },
 	// "postCreateCommand": "uv sync --frozen",
 	// "containerEnv": {
