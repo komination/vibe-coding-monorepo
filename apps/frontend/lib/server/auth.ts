@@ -1,7 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { serverApi, api } from "./api"
-import type { ReactElement } from "react"
 
 export interface AuthenticatedSession {
   cognitoSub: string
@@ -33,22 +32,6 @@ export async function getSession(): Promise<AuthenticatedSession | null> {
   }
 }
 
-/**
- * Require authentication for Server Components
- * Redirects to sign-in page if not authenticated
- */
-export async function requireAuth(redirectTo?: string): Promise<AuthenticatedSession> {
-  const session = await getSession()
-  
-  if (!session) {
-    const signInUrl = redirectTo 
-      ? `/signin?callbackUrl=${encodeURIComponent(redirectTo)}`
-      : '/signin'
-    redirect(signInUrl)
-  }
-
-  return session
-}
 
 /**
  * Get current user profile from the backend
@@ -131,34 +114,3 @@ export function handleAuthError(error: any, fallbackPath = '/signin') {
   redirect(fallbackPath)
 }
 
-/**
- * Server-side auth wrapper for pages that require authentication
- * Usage: export default withAuth(MyPage)
- */
-export function withAuth<T extends any[]>(
-  Component: (...args: T) => Promise<ReactElement>,
-  options: {
-    redirectTo?: string
-    requireBoardAccess?: string
-  } = {}
-) {
-  return async (...args: T): Promise<ReactElement> => {
-    try {
-      await requireAuth(options.redirectTo)
-      
-      // Check board access if required
-      if (options.requireBoardAccess) {
-        const access = await getBoardAccess(options.requireBoardAccess)
-        if (!access) {
-          redirect('/dashboard?error=access_denied')
-        }
-      }
-
-      return Component(...args)
-    } catch (error) {
-      handleAuthError(error)
-      // This won't be reached due to redirect, but TypeScript needs it
-      throw error
-    }
-  }
-}

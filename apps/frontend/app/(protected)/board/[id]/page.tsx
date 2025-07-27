@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation"
 import { Container, Typography, Box, Chip, Paper } from "@mui/material"
 import { getBoard } from "@/lib/actions/boards"
-import { requireAuth } from "@/lib/server/auth"
 import LockIcon from "@mui/icons-material/Lock"
 import PublicIcon from "@mui/icons-material/Public"
 
@@ -12,9 +11,6 @@ interface BoardPageProps {
 }
 
 export default async function BoardPage({ params }: BoardPageProps) {
-  // Ensure user is authenticated
-  await requireAuth()
-
   const { id } = await params
   
   // Fetch board data

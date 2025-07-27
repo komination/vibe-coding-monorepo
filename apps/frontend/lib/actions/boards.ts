@@ -2,7 +2,6 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { api } from '../server/api'
-import { requireAuth } from '../server/auth'
 
 // Re-export types from the API module
 export interface Board {
@@ -88,9 +87,6 @@ export async function createBoard(formData: FormData | CreateBoardRequest) {
  */
 export async function updateBoard(boardId: string, formData: FormData | UpdateBoardRequest) {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     // Extract data from FormData or use object directly
     const data: UpdateBoardRequest = formData instanceof FormData ? {
       title: formData.get('title') as string || undefined,
@@ -124,9 +120,6 @@ export async function updateBoard(boardId: string, formData: FormData | UpdateBo
  */
 export async function deleteBoard(boardId: string) {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     // Delete board via API
     const result = await api.boards.delete(boardId)
 
@@ -154,9 +147,6 @@ export async function addBoardMember(
   formData: FormData | { email: string; role?: string }
 ) {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     // Extract data from FormData or use object directly
     const data = formData instanceof FormData ? {
       email: formData.get('email') as string,
@@ -196,9 +186,6 @@ export async function updateMemberRole(
   formData: FormData | { role: string }
 ) {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     // Extract data from FormData or use object directly
     const data = formData instanceof FormData ? {
       role: formData.get('role') as string,
@@ -233,9 +220,6 @@ export async function updateMemberRole(
  */
 export async function removeBoardMember(boardId: string, userId: string) {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     // Remove member via API
     const result = await api.boards.members.remove(boardId, userId)
 
@@ -264,6 +248,10 @@ export async function getBoards(): Promise<Board[]> {
     const result = await api.boards.list()
 
     if (result.error) {
+      // For authentication errors, throw to allow proper error handling
+      if (result.status === 401) {
+        throw new Error('Authentication session expired')
+      }
       console.error('Failed to fetch boards:', result.error)
       return []
     }
@@ -279,7 +267,7 @@ export async function getBoards(): Promise<Board[]> {
     return []
   } catch (error) {
     console.error('Error fetching boards:', error)
-    return []
+    throw error
   }
 }
 
@@ -288,9 +276,6 @@ export async function getBoards(): Promise<Board[]> {
  */
 export async function getBoard(boardId: string): Promise<Board | null> {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     const result = await api.boards.get(boardId)
 
     if (result.error) {
@@ -310,9 +295,6 @@ export async function getBoard(boardId: string): Promise<Board | null> {
  */
 export async function getBoardMembers(boardId: string): Promise<BoardMember[]> {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     const result = await api.boards.members.list(boardId)
 
     if (result.error) {

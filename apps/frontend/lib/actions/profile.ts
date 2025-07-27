@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { api } from '../server/api'
-import { requireAuth } from '../server/auth'
 
 export interface UpdateProfileRequest {
   name?: string
@@ -24,9 +23,6 @@ export interface ProfileData {
  */
 export async function getProfile(): Promise<ProfileData | null> {
   try {
-    // Ensure user is authenticated
-    await requireAuth()
-
     const result = await api.auth.profile()
 
     if (result.error) {
